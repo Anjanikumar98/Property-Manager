@@ -123,7 +123,9 @@ class InvalidFileTypeFailure extends FileFailure {
 }
 
 class FileSizeExceededFailure extends FileFailure {
-  const FileSizeExceededFailure() : super('File size exceeded maximum limit');
+  const FileSizeExceededFailure([
+    super.message = 'File size exceeded maximum limit',
+  ]);
 }
 
 // Permission failures
@@ -198,4 +200,3 @@ class FailureHandler {
     return ServerFailure(error.toString());
   }
 }
-
