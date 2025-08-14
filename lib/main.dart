@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'app/app.dart';
+import 'core/services/database_service.dart';
+import 'core/services/notification_service.dart';
+import 'package:injectable/injectable.dart' as di;
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize dependency injection
+  // await di.init();
+  //
+  // // Initialize database
+  // await GetIt.instance<DatabaseService>().initDatabase();
+  //
+  // // Initialize notifications
+  // await GetIt.instance<NotificationService>().initialize();
+
+  runApp(const PropertyMasterApp());
 }
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: SafeArea(child: Scaffold(body: Text('Property Manager'))),
-    );
-  }
-}
-
