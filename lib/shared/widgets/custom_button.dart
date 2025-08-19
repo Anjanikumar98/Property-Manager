@@ -1,4 +1,3 @@
-// lib/shared/widgets/custom_button.dart
 import 'package:flutter/material.dart';
 
 class CustomButton extends StatelessWidget {
@@ -91,4 +90,3 @@ class CustomButton extends StatelessWidget {
 }
 
 enum ButtonType { primary, secondary, outline, text }
-
