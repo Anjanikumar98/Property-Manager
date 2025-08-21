@@ -1,57 +1,44 @@
 import 'package:equatable/equatable.dart';
 
 abstract class Failure extends Equatable {
-  const Failure([List properties = const <dynamic>[]]) : super();
+  const Failure();
+
+  String get message;
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [message];
 }
 
 // General failures
 class ServerFailure extends Failure {
-  final String message;
-
-  const ServerFailure(this.message);
-
   @override
-  List<Object> get props => [message];
+  final String message;
+  const ServerFailure(this.message);
 }
 
 class CacheFailure extends Failure {
-  final String message;
-
-  const CacheFailure(this.message);
-
   @override
-  List<Object> get props => [message];
+  final String message;
+  const CacheFailure(this.message);
 }
 
 class NetworkFailure extends Failure {
-  final String message;
-
-  const NetworkFailure(this.message);
-
   @override
-  List<Object> get props => [message];
+  final String message;
+  const NetworkFailure(this.message);
 }
 
 class ValidationFailure extends Failure {
-  final String message;
-
-  const ValidationFailure(this.message);
-
   @override
-  List<Object> get props => [message];
+  final String message;
+  const ValidationFailure(this.message);
 }
 
 // Auth failures
 class AuthFailure extends Failure {
-  final String message;
-
-  const AuthFailure(this.message);
-
   @override
-  List<Object> get props => [message];
+  final String message;
+  const AuthFailure(this.message);
 }
 
 class InvalidCredentialsFailure extends AuthFailure {
@@ -72,12 +59,9 @@ class WeakPasswordFailure extends AuthFailure {
 
 // Database failures
 class DatabaseFailure extends Failure {
-  final String message;
-
-  const DatabaseFailure(this.message);
-
   @override
-  List<Object> get props => [message];
+  final String message;
+  const DatabaseFailure(this.message);
 }
 
 class PropertyNotFoundFailure extends DatabaseFailure {
@@ -98,12 +82,9 @@ class PaymentNotFoundFailure extends DatabaseFailure {
 
 // File operation failures
 class FileFailure extends Failure {
-  final String message;
-
-  const FileFailure(this.message);
-
   @override
-  List<Object> get props => [message];
+  final String message;
+  const FileFailure(this.message);
 }
 
 class FileNotFoundFailure extends FileFailure {
@@ -130,12 +111,9 @@ class FileSizeExceededFailure extends FileFailure {
 
 // Permission failures
 class PermissionFailure extends Failure {
-  final String message;
-
-  const PermissionFailure(this.message);
-
   @override
-  List<Object> get props => [message];
+  final String message;
+  const PermissionFailure(this.message);
 }
 
 class StoragePermissionFailure extends PermissionFailure {
@@ -153,12 +131,9 @@ class NotificationPermissionFailure extends PermissionFailure {
 
 // Business logic failures
 class BusinessLogicFailure extends Failure {
-  final String message;
-
-  const BusinessLogicFailure(this.message);
-
   @override
-  List<Object> get props => [message];
+  final String message;
+  const BusinessLogicFailure(this.message);
 }
 
 class PropertyAlreadyOccupiedFailure extends BusinessLogicFailure {
@@ -184,7 +159,7 @@ class PaymentAlreadyExistsFailure extends BusinessLogicFailure {
     : super('Payment already recorded for this period');
 }
 
-// Utility class to convert exceptions to failures
+// Failure Handler
 class FailureHandler {
   static Failure handleException(Exception exception) {
     if (exception is FormatException) {
