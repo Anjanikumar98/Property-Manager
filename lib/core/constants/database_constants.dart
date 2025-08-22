@@ -2,6 +2,77 @@ class DatabaseConstants {
   static const String databaseName = 'property_master.db';
   static const int databaseVersion = 1;
 
+  // Users table columns
+  static const String userId = 'id';
+  static const String userEmail = 'email';
+  static const String userPassword = 'password';
+  static const String userFirstName = 'first_name';
+  static const String userLastName = 'last_name';
+  static const String userPhone = 'phone';
+  static const String userCreatedAt = 'created_at';
+  static const String userUpdatedAt = 'updated_at';
+
+  // Properties table columns
+  static const String propertyId = 'id';
+  static const String propertyName = 'name';
+  static const String propertyAddress = 'address';
+  static const String propertyCity = 'city';
+  static const String propertyState = 'state';
+  static const String propertyZipCode = 'zip_code';
+  static const String propertyType = 'type';
+  static const String propertyBedrooms = 'bedrooms';
+  static const String propertyBathrooms = 'bathrooms';
+  static const String propertySquareFeet = 'square_feet';
+  static const String propertyMonthlyRent = 'monthly_rent';
+  static const String propertySecurityDeposit = 'security_deposit';
+  static const String propertyAmenities = 'amenities';
+  static const String propertyDescription = 'description';
+  static const String propertyImageUrls = 'image_urls';
+  static const String propertyCreatedAt = 'created_at';
+  static const String propertyUpdatedAt = 'updated_at';
+  static const String propertyStatus = 'status';
+  static const String propertyOwnerId = 'owner_id';
+
+  // Tenants table columns
+  static const String tenantId = 'id';
+  static const String tenantFirstName = 'first_name';
+  static const String tenantLastName = 'last_name';
+  static const String tenantEmail = 'email';
+  static const String tenantPhone = 'phone';
+  static const String tenantEmergencyContact = 'emergency_contact';
+  static const String tenantEmergencyPhone = 'emergency_phone';
+  static const String tenantCreatedAt = 'created_at';
+  static const String tenantUpdatedAt = 'updated_at';
+  static const String tenantOwnerId = 'owner_id';
+
+  // Leases table columns
+  static const String leaseId = 'id';
+  static const String leasePropertyId = 'property_id';
+  static const String leaseTenantId = 'tenant_id';
+  static const String leaseStartDate = 'start_date';
+  static const String leaseEndDate = 'end_date';
+  static const String leaseMonthlyRent = 'monthly_rent';
+  static const String leaseSecurityDeposit = 'security_deposit';
+  static const String leaseStatus = 'status';
+  static const String leaseTerms = 'terms';
+  static const String leaseCreatedAt = 'created_at';
+  static const String leaseUpdatedAt = 'updated_at';
+  static const String leaseOwnerId = 'owner_id';
+
+  // Payments table columns
+  static const String paymentId = 'id';
+  static const String paymentLeaseId = 'lease_id';
+  static const String paymentAmount = 'amount';
+  static const String paymentDate = 'payment_date';
+  static const String paymentDueDate = 'due_date';
+  static const String paymentType = 'type';
+  static const String paymentStatus = 'status';
+  static const String paymentMethod = 'payment_method';
+  static const String paymentNotes = 'notes';
+  static const String paymentCreatedAt = 'created_at';
+  static const String paymentUpdatedAt = 'updated_at';
+  static const String paymentOwnerId = 'owner_id';
+
   // Table Names
   static const String usersTable = 'users';
   static const String propertiesTable = 'properties';

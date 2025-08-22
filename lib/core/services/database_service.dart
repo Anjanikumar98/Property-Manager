@@ -1,268 +1,212 @@
+// lib/core/services/database_service.dart
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../constants/database_constants.dart';
-import 'package:property_manager/core/errors/exceptions.dart' as app_errors;
 
 class DatabaseService {
   static Database? _database;
+  static const String _databaseName = 'property_master.db';
+  static const int _databaseVersion = 1;
 
-  Future<Database> get database async {
+  static Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await initDatabase();
+    _database = await _initDatabase();
     return _database!;
   }
 
-  Future<Database> initDatabase() async {
-    try {
-      final databasesPath = await getDatabasesPath();
-      final path = join(databasesPath, DatabaseConstants.databaseName);
-
-      return await openDatabase(
-        path,
-        version: DatabaseConstants.databaseVersion,
-        onCreate: _createTables,
-        onUpgrade: _upgradeDatabase,
-      );
-    } catch (e) {
-      throw app_errors.DatabaseException('Failed to insert data: $e');
-    }
+  static Future<Database> _initDatabase() async {
+    String path = join(await getDatabasesPath(), _databaseName);
+    return await openDatabase(
+      path,
+      version: _databaseVersion,
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+    );
   }
 
-  Future<void> _createTables(Database db, int version) async {
-    final batch = db.batch();
+  static Future<void> _onCreate(Database db, int version) async {
+    // Create users table
+    await db.execute('''
+      CREATE TABLE ${DatabaseConstants.usersTable} (
+        ${DatabaseConstants.userId} TEXT PRIMARY KEY,
+        ${DatabaseConstants.userEmail} TEXT UNIQUE NOT NULL,
+        ${DatabaseConstants.userPassword} TEXT NOT NULL,
+        ${DatabaseConstants.userFirstName} TEXT NOT NULL,
+        ${DatabaseConstants.userLastName} TEXT NOT NULL,
+        ${DatabaseConstants.userPhone} TEXT,
+        ${DatabaseConstants.userCreatedAt} TEXT NOT NULL,
+        ${DatabaseConstants.userUpdatedAt} TEXT
+      )
+    ''');
 
-    // Create all tables
-    batch.execute(DatabaseConstants.createUsersTable);
-    batch.execute(DatabaseConstants.createPropertiesTable);
-    batch.execute(DatabaseConstants.createTenantsTable);
-    batch.execute(DatabaseConstants.createLeasesTable);
-    batch.execute(DatabaseConstants.createPaymentsTable);
-    batch.execute(DatabaseConstants.createMaintenanceTable);
-    batch.execute(DatabaseConstants.createNotificationsTable);
-    batch.execute(DatabaseConstants.createDocumentsTable);
+    // Create properties table
+    await db.execute('''
+      CREATE TABLE ${DatabaseConstants.propertiesTable} (
+        ${DatabaseConstants.propertyId} TEXT PRIMARY KEY,
+        ${DatabaseConstants.propertyName} TEXT NOT NULL,
+        ${DatabaseConstants.propertyAddress} TEXT NOT NULL,
+        ${DatabaseConstants.propertyCity} TEXT NOT NULL,
+        ${DatabaseConstants.propertyState} TEXT NOT NULL,
+        ${DatabaseConstants.propertyZipCode} TEXT NOT NULL,
+        ${DatabaseConstants.propertyType} INTEGER NOT NULL,
+        ${DatabaseConstants.propertyBedrooms} INTEGER NOT NULL,
+        ${DatabaseConstants.propertyBathrooms} INTEGER NOT NULL,
+        ${DatabaseConstants.propertySquareFeet} REAL NOT NULL,
+        ${DatabaseConstants.propertyMonthlyRent} REAL NOT NULL,
+        ${DatabaseConstants.propertySecurityDeposit} REAL NOT NULL,
+        ${DatabaseConstants.propertyAmenities} TEXT,
+        ${DatabaseConstants.propertyDescription} TEXT,
+        ${DatabaseConstants.propertyImageUrls} TEXT,
+        ${DatabaseConstants.propertyCreatedAt} TEXT NOT NULL,
+        ${DatabaseConstants.propertyUpdatedAt} TEXT,
+        ${DatabaseConstants.propertyStatus} INTEGER NOT NULL,
+        ${DatabaseConstants.propertyOwnerId} TEXT NOT NULL,
+        FOREIGN KEY (${DatabaseConstants.propertyOwnerId}) 
+          REFERENCES ${DatabaseConstants.usersTable} (${DatabaseConstants.userId})
+          ON DELETE CASCADE
+      )
+    ''');
+
+    // Create tenants table
+    await db.execute('''
+      CREATE TABLE ${DatabaseConstants.tenantsTable} (
+        ${DatabaseConstants.tenantId} TEXT PRIMARY KEY,
+        ${DatabaseConstants.tenantFirstName} TEXT NOT NULL,
+        ${DatabaseConstants.tenantLastName} TEXT NOT NULL,
+        ${DatabaseConstants.tenantEmail} TEXT,
+        ${DatabaseConstants.tenantPhone} TEXT NOT NULL,
+        ${DatabaseConstants.tenantEmergencyContact} TEXT,
+        ${DatabaseConstants.tenantEmergencyPhone} TEXT,
+        ${DatabaseConstants.tenantCreatedAt} TEXT NOT NULL,
+        ${DatabaseConstants.tenantUpdatedAt} TEXT,
+        ${DatabaseConstants.tenantOwnerId} TEXT NOT NULL,
+        FOREIGN KEY (${DatabaseConstants.tenantOwnerId}) 
+          REFERENCES ${DatabaseConstants.usersTable} (${DatabaseConstants.userId})
+          ON DELETE CASCADE
+      )
+    ''');
+
+    // Create leases table
+    await db.execute('''
+      CREATE TABLE ${DatabaseConstants.leasesTable} (
+        ${DatabaseConstants.leaseId} TEXT PRIMARY KEY,
+        ${DatabaseConstants.leasePropertyId} TEXT NOT NULL,
+        ${DatabaseConstants.leaseTenantId} TEXT NOT NULL,
+        ${DatabaseConstants.leaseStartDate} TEXT NOT NULL,
+        ${DatabaseConstants.leaseEndDate} TEXT NOT NULL,
+        ${DatabaseConstants.leaseMonthlyRent} REAL NOT NULL,
+        ${DatabaseConstants.leaseSecurityDeposit} REAL NOT NULL,
+        ${DatabaseConstants.leaseStatus} INTEGER NOT NULL,
+        ${DatabaseConstants.leaseTerms} TEXT,
+        ${DatabaseConstants.leaseCreatedAt} TEXT NOT NULL,
+        ${DatabaseConstants.leaseUpdatedAt} TEXT,
+        ${DatabaseConstants.leaseOwnerId} TEXT NOT NULL,
+        FOREIGN KEY (${DatabaseConstants.leasePropertyId}) 
+          REFERENCES ${DatabaseConstants.propertiesTable} (${DatabaseConstants.propertyId})
+          ON DELETE CASCADE,
+        FOREIGN KEY (${DatabaseConstants.leaseTenantId}) 
+          REFERENCES ${DatabaseConstants.tenantsTable} (${DatabaseConstants.tenantId})
+          ON DELETE CASCADE,
+        FOREIGN KEY (${DatabaseConstants.leaseOwnerId}) 
+          REFERENCES ${DatabaseConstants.usersTable} (${DatabaseConstants.userId})
+          ON DELETE CASCADE
+      )
+    ''');
+
+    // Create payments table
+    await db.execute('''
+      CREATE TABLE ${DatabaseConstants.paymentsTable} (
+        ${DatabaseConstants.paymentId} TEXT PRIMARY KEY,
+        ${DatabaseConstants.paymentLeaseId} TEXT NOT NULL,
+        ${DatabaseConstants.paymentAmount} REAL NOT NULL,
+        ${DatabaseConstants.paymentDate} TEXT NOT NULL,
+        ${DatabaseConstants.paymentDueDate} TEXT NOT NULL,
+        ${DatabaseConstants.paymentType} INTEGER NOT NULL,
+        ${DatabaseConstants.paymentStatus} INTEGER NOT NULL,
+        ${DatabaseConstants.paymentMethod} TEXT,
+        ${DatabaseConstants.paymentNotes} TEXT,
+        ${DatabaseConstants.paymentCreatedAt} TEXT NOT NULL,
+        ${DatabaseConstants.paymentUpdatedAt} TEXT,
+        ${DatabaseConstants.paymentOwnerId} TEXT NOT NULL,
+        FOREIGN KEY (${DatabaseConstants.paymentLeaseId}) 
+          REFERENCES ${DatabaseConstants.leasesTable} (${DatabaseConstants.leaseId})
+          ON DELETE CASCADE,
+        FOREIGN KEY (${DatabaseConstants.paymentOwnerId}) 
+          REFERENCES ${DatabaseConstants.usersTable} (${DatabaseConstants.userId})
+          ON DELETE CASCADE
+      )
+    ''');
 
     // Create indexes for better performance
-    batch.execute(_createIndexes());
+    await db.execute('''
+      CREATE INDEX idx_properties_owner_id 
+      ON ${DatabaseConstants.propertiesTable} (${DatabaseConstants.propertyOwnerId})
+    ''');
 
-    await batch.commit();
+    await db.execute('''
+      CREATE INDEX idx_properties_status 
+      ON ${DatabaseConstants.propertiesTable} (${DatabaseConstants.propertyStatus})
+    ''');
+
+    await db.execute('''
+      CREATE INDEX idx_tenants_owner_id 
+      ON ${DatabaseConstants.tenantsTable} (${DatabaseConstants.tenantOwnerId})
+    ''');
+
+    await db.execute('''
+      CREATE INDEX idx_leases_property_id 
+      ON ${DatabaseConstants.leasesTable} (${DatabaseConstants.leasePropertyId})
+    ''');
+
+    await db.execute('''
+      CREATE INDEX idx_leases_tenant_id 
+      ON ${DatabaseConstants.leasesTable} (${DatabaseConstants.leaseTenantId})
+    ''');
+
+    await db.execute('''
+      CREATE INDEX idx_leases_owner_id 
+      ON ${DatabaseConstants.leasesTable} (${DatabaseConstants.leaseOwnerId})
+    ''');
+
+    await db.execute('''
+      CREATE INDEX idx_payments_lease_id 
+      ON ${DatabaseConstants.paymentsTable} (${DatabaseConstants.paymentLeaseId})
+    ''');
+
+    await db.execute('''
+      CREATE INDEX idx_payments_owner_id 
+      ON ${DatabaseConstants.paymentsTable} (${DatabaseConstants.paymentOwnerId})
+    ''');
+
+    await db.execute('''
+      CREATE INDEX idx_payments_due_date 
+      ON ${DatabaseConstants.paymentsTable} (${DatabaseConstants.paymentDueDate})
+    ''');
   }
 
-  String _createIndexes() {
-    return '''
-      CREATE INDEX idx_properties_owner ON ${DatabaseConstants.propertiesTable}(${DatabaseConstants.propertyOwnerIdColumn});
-      CREATE INDEX idx_leases_property ON ${DatabaseConstants.leasesTable}(${DatabaseConstants.leasePropertyIdColumn});
-      CREATE INDEX idx_leases_tenant ON ${DatabaseConstants.leasesTable}(${DatabaseConstants.leaseTenantIdColumn});
-      CREATE INDEX idx_payments_lease ON ${DatabaseConstants.paymentsTable}(${DatabaseConstants.paymentLeaseIdColumn});
-      CREATE INDEX idx_payments_date ON ${DatabaseConstants.paymentsTable}(${DatabaseConstants.paymentDateColumn});
-      CREATE INDEX idx_maintenance_property ON ${DatabaseConstants.maintenanceTable}(${DatabaseConstants.maintenancePropertyIdColumn});
-      CREATE INDEX idx_documents_entity ON ${DatabaseConstants.documentsTable}(${DatabaseConstants.documentEntityTypeColumn}, ${DatabaseConstants.documentEntityIdColumn});
-    ''';
-  }
-
-  Future<void> _upgradeDatabase(
+  static Future<void> _onUpgrade(
     Database db,
     int oldVersion,
     int newVersion,
   ) async {
     // Handle database upgrades here
     if (oldVersion < 2) {
-      // Add upgrade logic for version 2
+      // Add new columns or tables for version 2
     }
   }
 
-  // Generic CRUD Operations
-  Future<int> insert(String table, Map<String, dynamic> data) async {
-    try {
-      final db = await database;
-      return await db.insert(
-        table,
-        data,
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-    } catch (e) {
-      throw app_errors.DatabaseException('Failed to insert data: $e');
-    }
-  }
-
-  Future<List<Map<String, dynamic>>> query(
-    String table, {
-    bool? distinct,
-    List<String>? columns,
-    String? where,
-    List<dynamic>? whereArgs,
-    String? groupBy,
-    String? having,
-    String? orderBy,
-    int? limit,
-    int? offset,
-  }) async {
-    try {
-      final db = await database;
-      return await db.query(
-        table,
-        distinct: distinct,
-        columns: columns,
-        where: where,
-        whereArgs: whereArgs,
-        groupBy: groupBy,
-        having: having,
-        orderBy: orderBy,
-        limit: limit,
-        offset: offset,
-      );
-    } catch (e) {
-      throw app_errors.DatabaseException('Failed to query data: $e');
-    }
-  }
-
-  Future<Map<String, dynamic>?> queryById(
-    String table,
-    String id, [
-    String idColumn = 'id',
-  ]) async {
-    try {
-      final results = await query(
-        table,
-        where: '$idColumn = ?',
-        whereArgs: [id],
-        limit: 1,
-      );
-      return results.isNotEmpty ? results.first : null;
-    } catch (e) {
-      throw app_errors.DatabaseException('Failed to query by ID: $e');
-    }
-  }
-
-  Future<int> update(
-    String table,
-    Map<String, dynamic> data,
-    String where,
-    List<dynamic> whereArgs,
-  ) async {
-    try {
-      final db = await database;
-      return await db.update(table, data, where: where, whereArgs: whereArgs);
-    } catch (e) {
-      throw app_errors.DatabaseException('Failed to update data: $e');
-    }
-  }
-
-  Future<int> updateById(
-    String table,
-    String id,
-    Map<String, dynamic> data, [
-    String idColumn = 'id',
-  ]) async {
-    try {
-      return await update(table, data, '$idColumn = ?', [id]);
-    } catch (e) {
-      throw app_errors.DatabaseException('Failed to update by ID: $e');
-    }
-  }
-
-  Future<int> delete(
-    String table,
-    String where,
-    List<dynamic> whereArgs,
-  ) async {
-    try {
-      final db = await database;
-      return await db.delete(table, where: where, whereArgs: whereArgs);
-    } catch (e) {
-      throw app_errors.DatabaseException('Failed to delete data: $e');
-    }
-  }
-
-  Future<int> deleteById(
-    String table,
-    String id, [
-    String idColumn = 'id',
-  ]) async {
-    try {
-      return await delete(table, '$idColumn = ?', [id]);
-    } catch (e) {
-      throw app_errors.DatabaseException('Failed to delete by ID: $e');
-    }
-  }
-
-  Future<int> count(
-    String table, {
-    String? where,
-    List<dynamic>? whereArgs,
-  }) async {
-    try {
-      final db = await database;
-      final result = await db.rawQuery(
-        'SELECT COUNT(*) as count FROM $table${where != null ? ' WHERE $where' : ''}',
-        whereArgs,
-      );
-      return Sqflite.firstIntValue(result) ?? 0;
-    } catch (e) {
-      throw app_errors.DatabaseException('Failed to count records: $e');
-    }
-  }
-
-  Future<bool> exists(
-    String table,
-    String where,
-    List<dynamic> whereArgs,
-  ) async {
-    try {
-      final count = await this.count(table, where: where, whereArgs: whereArgs);
-      return count > 0;
-    } catch (e) {
-      throw app_errors.DatabaseException('Failed to check existence: $e');
-    }
-  }
-
-  Future<List<Map<String, dynamic>>> rawQuery(
-    String sql, [
-    List<dynamic>? arguments,
-  ]) async {
-    try {
-      final db = await database;
-      return await db.rawQuery(sql, arguments);
-    } catch (e) {
-      throw app_errors.DatabaseException('Failed to execute raw query: $e');
-    }
-  }
-
-  Future<void> transaction(
-    Future<void> Function(Transaction txn) action,
-  ) async {
-    try {
-      final db = await database;
-      await db.transaction(action);
-    } catch (e) {
-      throw app_errors.DatabaseException('Transaction failed: $e');
-    }
-  }
-
-  Future<void> clearAllTables() async {
-    try {
-      final db = await database;
-      final batch = db.batch();
-
-      // Clear all tables in correct order (considering foreign keys)
-      batch.delete(DatabaseConstants.documentsTable);
-      batch.delete(DatabaseConstants.notificationsTable);
-      batch.delete(DatabaseConstants.maintenanceTable);
-      batch.delete(DatabaseConstants.paymentsTable);
-      batch.delete(DatabaseConstants.leasesTable);
-      batch.delete(DatabaseConstants.tenantsTable);
-      batch.delete(DatabaseConstants.propertiesTable);
-      batch.delete(DatabaseConstants.usersTable);
-
-      await batch.commit();
-    } catch (e) {
-      throw app_errors.DatabaseException('Failed to clear tables: $e');
-    }
-  }
-
-  Future<void> close() async {
+  static Future<void> closeDatabase() async {
     if (_database != null) {
       await _database!.close();
       _database = null;
     }
   }
+
+  static Future<void> deleteDatabase() async {
+    String path = join(await getDatabasesPath(), _databaseName);
+    await databaseFactory.deleteDatabase(path);
+    _database = null;
+  }
 }
+
+
