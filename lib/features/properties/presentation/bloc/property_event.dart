@@ -1,6 +1,5 @@
-// lib/features/properties/presentation/bloc/property_event.dart
 import 'package:equatable/equatable.dart';
-import '../../domain/entities/property.dart';
+import 'package:property_manager/features/properties/domain/entities/property.dart';
 
 abstract class PropertyEvent extends Equatable {
   const PropertyEvent();
@@ -9,14 +8,7 @@ abstract class PropertyEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class LoadProperties extends PropertyEvent {
-  final String ownerId;
-
-  const LoadProperties(this.ownerId);
-
-  @override
-  List<Object?> get props => [ownerId];
-}
+class GetPropertiesEvent extends PropertyEvent {}
 
 class AddPropertyEvent extends PropertyEvent {
   final Property property;
@@ -45,12 +37,31 @@ class DeletePropertyEvent extends PropertyEvent {
   List<Object?> get props => [propertyId];
 }
 
-class FilterPropertiesByStatus extends PropertyEvent {
-  final String ownerId;
-  final PropertyStatus status;
+class GetPropertyEvent extends PropertyEvent {
+  final String propertyId;
 
-  const FilterPropertiesByStatus(this.ownerId, this.status);
+  const GetPropertyEvent(this.propertyId);
 
   @override
-  List<Object?> get props => [ownerId, status];
+  List<Object?> get props => [propertyId];
+}
+
+class UpdatePropertyStatusEvent extends PropertyEvent {
+  final String propertyId;
+  final String status;
+
+  const UpdatePropertyStatusEvent(this.propertyId, this.status);
+
+  @override
+  List<Object?> get props => [propertyId, status];
+}
+
+class SearchPropertiesEvent extends PropertyEvent {
+  final String query;
+  final String? filterStatus;
+
+  const SearchPropertiesEvent(this.query, {this.filterStatus});
+
+  @override
+  List<Object?> get props => [query, filterStatus];
 }

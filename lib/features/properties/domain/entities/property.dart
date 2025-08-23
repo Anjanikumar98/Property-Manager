@@ -109,6 +109,20 @@ class Property extends Equatable {
     status,
     ownerId,
   ];
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'address': address,
+      'type': type,
+      'status': status,
+      'monthlyRent': monthlyRent,
+      'securityDeposit': securityDeposit,
+      'bedrooms': bedrooms,
+      'bathrooms': bathrooms,
+      'description': description,
+    };
+  }
 }
 
 enum PropertyType { apartment, house, condo, townhouse, studio, commercial }

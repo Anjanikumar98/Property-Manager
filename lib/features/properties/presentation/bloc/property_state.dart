@@ -1,6 +1,5 @@
-// lib/features/properties/presentation/bloc/property_state.dart
 import 'package:equatable/equatable.dart';
-import '../../domain/entities/property.dart';
+import 'package:property_manager/features/properties/domain/entities/property.dart';
 
 abstract class PropertyState extends Equatable {
   const PropertyState();
@@ -13,13 +12,59 @@ class PropertyInitial extends PropertyState {}
 
 class PropertyLoading extends PropertyState {}
 
-class PropertyLoaded extends PropertyState {
+class PropertiesLoaded extends PropertyState {
   final List<Property> properties;
 
-  const PropertyLoaded(this.properties);
+  const PropertiesLoaded(this.properties);
 
   @override
   List<Object?> get props => [properties];
+}
+
+class PropertyLoaded extends PropertyState {
+  final Property property;
+
+  const PropertyLoaded(this.property);
+
+  @override
+  List<Object?> get props => [property];
+}
+
+class PropertyAdded extends PropertyState {
+  final Property property;
+
+  const PropertyAdded(this.property);
+
+  @override
+  List<Object?> get props => [property];
+}
+
+class PropertyUpdated extends PropertyState {
+  final Property property;
+
+  const PropertyUpdated(this.property);
+
+  @override
+  List<Object?> get props => [property];
+}
+
+class PropertyDeleted extends PropertyState {
+  final String propertyId;
+
+  const PropertyDeleted(this.propertyId);
+
+  @override
+  List<Object?> get props => [propertyId];
+}
+
+class PropertyStatusUpdated extends PropertyState {
+  final String propertyId;
+  final String status;
+
+  const PropertyStatusUpdated(this.propertyId, this.status);
+
+  @override
+  List<Object?> get props => [propertyId, status];
 }
 
 class PropertyError extends PropertyState {
@@ -30,16 +75,3 @@ class PropertyError extends PropertyState {
   @override
   List<Object?> get props => [message];
 }
-
-class PropertyAdded extends PropertyState {
-  final String propertyId;
-
-  const PropertyAdded(this.propertyId);
-
-  @override
-  List<Object?> get props => [propertyId];
-}
-
-class PropertyUpdated extends PropertyState {}
-
-class PropertyDeleted extends PropertyState {}
