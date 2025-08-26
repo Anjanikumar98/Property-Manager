@@ -6,10 +6,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final List<Widget>? actions;
   final Widget? leading;
   final bool automaticallyImplyLeading;
+  final bool showBackButton;
   final Color? backgroundColor;
   final Color? foregroundColor;
   final double elevation;
   final bool centerTitle;
+  final VoidCallback? onBackPressed;
 
   const CustomAppBar({
     Key? key,
@@ -17,10 +19,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.actions,
     this.leading,
     this.automaticallyImplyLeading = true,
+    this.showBackButton = true,
     this.backgroundColor,
     this.foregroundColor,
     this.elevation = 0,
-    this.centerTitle = true,
+    this.centerTitle = false,
+    this.onBackPressed,
   }) : super(key: key);
 
   @override
@@ -28,17 +32,27 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       title: Text(
         title,
-        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-          fontWeight: FontWeight.w600,
-          color: foregroundColor ?? Theme.of(context).colorScheme.onSurface,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: foregroundColor ?? Colors.white,
         ),
       ),
       actions: actions,
-      leading: leading,
-      automaticallyImplyLeading: automaticallyImplyLeading,
-      backgroundColor: backgroundColor ?? Theme.of(context).colorScheme.surface,
-      foregroundColor:
-          foregroundColor ?? Theme.of(context).colorScheme.onSurface,
+      leading:
+          !showBackButton
+              ? null
+              : leading ??
+                  (automaticallyImplyLeading && Navigator.canPop(context)
+                      ? IconButton(
+                        onPressed:
+                            onBackPressed ?? () => Navigator.pop(context),
+                        icon: const Icon(Icons.arrow_back_ios),
+                      )
+                      : null),
+      automaticallyImplyLeading:
+          showBackButton ? automaticallyImplyLeading : false,
+      backgroundColor: backgroundColor ?? Colors.blue[600],
+      foregroundColor: foregroundColor ?? Colors.white,
       elevation: elevation,
       centerTitle: centerTitle,
       surfaceTintColor: Colors.transparent,
