@@ -13,4 +13,3 @@ abstract class PropertyRepository {
     PropertyStatus status,
   );
 }
-

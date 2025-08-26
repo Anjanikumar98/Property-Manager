@@ -185,4 +185,3 @@ class PropertyRepositoryImpl implements PropertyRepository {
     return null;
   }
 }
-
