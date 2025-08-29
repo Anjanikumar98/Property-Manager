@@ -183,6 +183,16 @@ class DatabaseConstants {
   static const String documentEntityIdColumn = 'entity_id';
   static const String documentCreatedAtColumn = 'created_at';
 
+  // Sync table columns
+  static const String syncId = 'id';
+  static const String syncTableName = 'table_name';
+  static const String syncRecordId = 'record_id';
+  static const String syncOperation = 'operation'; // insert, update, delete
+  static const String syncData = 'data';
+  static const String syncStatus = 'status'; // pending, synced, failed
+  static const String syncCreatedAt = 'created_at';
+  static const String syncRetryCount = 'retry_count';
+
   // Create Table Queries
   static const String createUsersTable = '''
     CREATE TABLE $usersTable (

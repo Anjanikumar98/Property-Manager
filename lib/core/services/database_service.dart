@@ -4,9 +4,17 @@ import 'package:path/path.dart';
 import '../constants/database_constants.dart';
 
 class DatabaseService {
+  static DatabaseService? _instance;
   static Database? _database;
   static const String _databaseName = 'property_master.db';
   static const int _databaseVersion = 1;
+
+  DatabaseService._internal();
+
+  factory DatabaseService() {
+    _instance ??= DatabaseService._internal();
+    return _instance!;
+  }
 
   static Future<Database> get database async {
     if (_database != null) return _database!;
@@ -208,5 +216,3 @@ class DatabaseService {
     _database = null;
   }
 }
-
-
