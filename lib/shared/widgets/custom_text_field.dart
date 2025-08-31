@@ -110,3 +110,85 @@ class CustomTextField extends StatelessWidget {
     );
   }
 }
+
+// class CustomTextField extends StatelessWidget {
+//   final String? label;
+//   final String? hint;
+//   final String? errorText;
+//   final TextEditingController? controller;
+//   final ValueChanged<String>? onChanged;
+//   final VoidCallback? onTap;
+//   final TextInputType? keyboardType;
+//   final bool obscureText;
+//   final bool readOnly;
+//   final IconData? prefixIcon;
+//   final Widget? suffix;
+//   final int? maxLines;
+//   final String? Function(String?)? validator;
+//   final bool isRequired;
+//
+//   const CustomTextField({
+//     super.key,
+//     this.label,
+//     this.hint,
+//     this.errorText,
+//     this.controller,
+//     this.onChanged,
+//     this.onTap,
+//     this.keyboardType,
+//     this.obscureText = false,
+//     this.readOnly = false,
+//     this.prefixIcon,
+//     this.suffix,
+//     this.maxLines = 1,
+//     this.validator,
+//     this.isRequired = false,
+//   });
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     final theme = Theme.of(context);
+//
+//     return Column(
+//       crossAxisAlignment: CrossAxisAlignment.start,
+//       children: [
+//         if (label != null)
+//           Padding(
+//             padding: const EdgeInsets.only(bottom: AppTheme.spacing8),
+//             child: Text.rich(
+//               TextSpan(
+//                 text: label!,
+//                 style: AppTheme.labelMedium.copyWith(
+//                   color: theme.colorScheme.onSurface,
+//                 ),
+//                 children: [
+//                   if (isRequired)
+//                     TextSpan(
+//                       text: ' *',
+//                       style: TextStyle(color: theme.colorScheme.error),
+//                     ),
+//                 ],
+//               ),
+//             ),
+//           ),
+
+//         TextFormField(
+//           controller: controller,
+//           onChanged: onChanged,
+//           onTap: onTap,
+//           keyboardType: keyboardType,
+//           obscureText: obscureText,
+//           readOnly: readOnly,
+//           maxLines: maxLines,
+//           validator: validator,
+//           decoration: InputDecoration(
+//             hintText: hint,
+//             prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
+//             suffixIcon: suffix,
+//             errorText: errorText,
+//           ),
+//         ),
+//       ],
+//     );
+//   }
+// }

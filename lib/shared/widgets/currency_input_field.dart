@@ -96,17 +96,17 @@ class _CurrencyInputFormatter extends TextInputFormatter {
     // Handle multiple decimal points
     List<String> parts = newText.split('.');
     if (parts.length > 2) {
-      newText = parts[0] + '.' + parts.sublist(1).join('');
+      newText = '${parts[0]}.${parts.sublist(1).join('')}';
     }
 
     // Limit decimal places
     if (parts.length == 2 && parts[1].length > decimalPlaces) {
-      newText = parts[0] + '.' + parts[1].substring(0, decimalPlaces);
+      newText = '${parts[0]}.${parts[1].substring(0, decimalPlaces)}';
     }
 
     // Prevent starting with decimal point
     if (newText.startsWith('.')) {
-      newText = '0' + newText;
+      newText = '0$newText';
     }
 
     return TextEditingValue(

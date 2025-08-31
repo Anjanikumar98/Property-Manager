@@ -1,55 +1,62 @@
-// lib/shared/widgets/error_widget.dart
 import 'package:flutter/material.dart';
+import 'package:property_manager/app/theme/app_theme.dart';
 
 class CustomErrorWidget extends StatelessWidget {
   final String message;
+  final String? title;
+  final IconData? icon;
   final VoidCallback? onRetry;
-  final String? retryButtonText;
+  final String? retryLabel;
 
   const CustomErrorWidget({
-    Key? key,
+    super.key,
     required this.message,
+    this.title,
+    this.icon,
     this.onRetry,
-    this.retryButtonText,
-  }) : super(key: key);
+    this.retryLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppTheme.spacing24),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
-            const SizedBox(height: 16),
-            Text(
-              'Something went wrong',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
-              ),
+            Icon(
+              icon ?? Icons.error_outline,
+              size: 64,
+              color: colorScheme.error,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.spacing16),
+            if (title != null) ...[
+              Text(
+                title!,
+                style: AppTheme.titleMedium.copyWith(
+                  color: colorScheme.onSurface,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppTheme.spacing8),
+            ],
             Text(
               message,
+              style: AppTheme.bodyMedium.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
             if (onRetry != null) ...[
-              const SizedBox(height: 24),
-              ElevatedButton(
+              SizedBox(height: AppTheme.spacing24),
+              ElevatedButton.icon(
                 onPressed: onRetry,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[600],
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                ),
-                child: Text(retryButtonText ?? 'Try Again'),
+                icon: const Icon(Icons.refresh),
+                label: Text(retryLabel ?? 'Try Again'),
               ),
             ],
           ],
