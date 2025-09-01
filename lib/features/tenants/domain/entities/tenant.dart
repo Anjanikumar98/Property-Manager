@@ -2,46 +2,40 @@
 import 'package:equatable/equatable.dart';
 
 class Tenant extends Equatable {
-  final String id;
+  final String? id;
   final String firstName;
   final String lastName;
   final String email;
   final String phone;
-  final String? alternatePhone;
-  final String address;
-  final String city;
-  final String state;
-  final String zipCode;
-  final String? occupation;
-  final String? company;
-  final double? monthlyIncome;
   final String? emergencyContactName;
   final String? emergencyContactPhone;
-  final String? idProofType;
-  final String? idProofNumber;
-  final String? profileImagePath;
+  final String? address;
+  final DateTime? dateOfBirth;
+  final String? occupation;
+  final double? monthlyIncome;
+  final String? idNumber;
+  final String? notes;
+  final List<String> propertyIds; // Properties this tenant is associated with
+  final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
 
   const Tenant({
-    required this.id,
+    this.id,
     required this.firstName,
     required this.lastName,
     required this.email,
     required this.phone,
-    this.alternatePhone,
-    required this.address,
-    required this.city,
-    required this.state,
-    required this.zipCode,
-    this.occupation,
-    this.company,
-    this.monthlyIncome,
     this.emergencyContactName,
     this.emergencyContactPhone,
-    this.idProofType,
-    this.idProofNumber,
-    this.profileImagePath,
+    this.address,
+    this.dateOfBirth,
+    this.occupation,
+    this.monthlyIncome,
+    this.idNumber,
+    this.notes,
+    this.propertyIds = const [],
+    this.isActive = true,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -54,19 +48,16 @@ class Tenant extends Equatable {
     String? lastName,
     String? email,
     String? phone,
-    String? alternatePhone,
-    String? address,
-    String? city,
-    String? state,
-    String? zipCode,
-    String? occupation,
-    String? company,
-    double? monthlyIncome,
     String? emergencyContactName,
     String? emergencyContactPhone,
-    String? idProofType,
-    String? idProofNumber,
-    String? profileImagePath,
+    String? address,
+    DateTime? dateOfBirth,
+    String? occupation,
+    double? monthlyIncome,
+    String? idNumber,
+    String? notes,
+    List<String>? propertyIds,
+    bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -76,20 +67,17 @@ class Tenant extends Equatable {
       lastName: lastName ?? this.lastName,
       email: email ?? this.email,
       phone: phone ?? this.phone,
-      alternatePhone: alternatePhone ?? this.alternatePhone,
-      address: address ?? this.address,
-      city: city ?? this.city,
-      state: state ?? this.state,
-      zipCode: zipCode ?? this.zipCode,
-      occupation: occupation ?? this.occupation,
-      company: company ?? this.company,
-      monthlyIncome: monthlyIncome ?? this.monthlyIncome,
       emergencyContactName: emergencyContactName ?? this.emergencyContactName,
       emergencyContactPhone:
           emergencyContactPhone ?? this.emergencyContactPhone,
-      idProofType: idProofType ?? this.idProofType,
-      idProofNumber: idProofNumber ?? this.idProofNumber,
-      profileImagePath: profileImagePath ?? this.profileImagePath,
+      address: address ?? this.address,
+      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
+      occupation: occupation ?? this.occupation,
+      monthlyIncome: monthlyIncome ?? this.monthlyIncome,
+      idNumber: idNumber ?? this.idNumber,
+      notes: notes ?? this.notes,
+      propertyIds: propertyIds ?? this.propertyIds,
+      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -102,21 +90,19 @@ class Tenant extends Equatable {
     lastName,
     email,
     phone,
-    alternatePhone,
-    address,
-    city,
-    state,
-    zipCode,
-    occupation,
-    company,
-    monthlyIncome,
     emergencyContactName,
     emergencyContactPhone,
-    idProofType,
-    idProofNumber,
-    profileImagePath,
+    address,
+    dateOfBirth,
+    occupation,
+    monthlyIncome,
+    idNumber,
+    notes,
+    propertyIds,
+    isActive,
     createdAt,
     updatedAt,
   ];
 }
+
 
