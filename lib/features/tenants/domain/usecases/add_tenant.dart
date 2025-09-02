@@ -21,7 +21,3 @@ class AddTenantParams {
 
   AddTenantParams({required this.tenant});
 }
-
-
-
-
