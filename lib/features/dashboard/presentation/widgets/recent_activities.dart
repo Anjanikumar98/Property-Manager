@@ -5,8 +5,7 @@ import 'package:property_manager/features/dashboard/presentation/bloc/dashboard_
 class RecentActivities extends StatelessWidget {
   final List<RecentActivity> activities;
 
-  const RecentActivities({Key? key, required this.activities})
-    : super(key: key);
+  const RecentActivities({super.key, required this.activities});
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +86,7 @@ class RecentActivities extends StatelessWidget {
 class _ActivityTile extends StatelessWidget {
   final RecentActivity activity;
 
-  const _ActivityTile({Key? key, required this.activity}) : super(key: key);
+  const _ActivityTile({required this.activity});
 
   @override
   Widget build(BuildContext context) {
@@ -182,8 +181,7 @@ class _ActivityTile extends StatelessWidget {
 class _AllActivitiesSheet extends StatelessWidget {
   final List<RecentActivity> activities;
 
-  const _AllActivitiesSheet({Key? key, required this.activities})
-    : super(key: key);
+  const _AllActivitiesSheet({required this.activities});
 
   @override
   Widget build(BuildContext context) {

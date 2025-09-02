@@ -10,6 +10,7 @@ class RegisterUser implements UseCase<User, RegisterParams> {
 
   RegisterUser(this.repository);
 
+  @override
   Future<Either<Failure, User>> call(RegisterParams params) async {
     return await repository.register(
       name: params.name,

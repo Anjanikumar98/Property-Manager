@@ -12,8 +12,7 @@ import 'add_property_page.dart';
 class PropertyDetailPage extends StatefulWidget {
   final Property property;
 
-  const PropertyDetailPage({Key? key, required this.property})
-    : super(key: key);
+  const PropertyDetailPage({super.key, required this.property});
 
   @override
   State<PropertyDetailPage> createState() => _PropertyDetailPageState();

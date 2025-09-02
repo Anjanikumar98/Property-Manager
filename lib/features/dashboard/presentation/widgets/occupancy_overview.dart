@@ -8,12 +8,12 @@ class OccupancyOverview extends StatelessWidget {
   final double occupancyRate;
 
   const OccupancyOverview({
-    Key? key,
+    super.key,
     required this.totalProperties,
     required this.activeLeases,
     required this.vacantProperties,
     required this.occupancyRate,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -73,11 +73,10 @@ class _OccupancyItem extends StatelessWidget {
   final Color color;
 
   const _OccupancyItem({
-    Key? key,
     required this.label,
     required this.value,
     required this.color,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -100,8 +99,7 @@ class _OccupancyItem extends StatelessWidget {
 class _OccupancyBar extends StatelessWidget {
   final double occupancyRate;
 
-  const _OccupancyBar({Key? key, required this.occupancyRate})
-    : super(key: key);
+  const _OccupancyBar({required this.occupancyRate});
 
   @override
   Widget build(BuildContext context) {

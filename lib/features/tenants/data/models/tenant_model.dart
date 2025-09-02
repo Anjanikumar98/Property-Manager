@@ -94,6 +94,7 @@ class TenantModel extends Tenant {
     );
   }
 
+  @override
   TenantModel copyWith({
     String? id,
     String? firstName,

@@ -5,8 +5,7 @@ import 'package:property_manager/features/dashboard/presentation/bloc/dashboard_
 class PaymentStatusChart extends StatelessWidget {
   final List<PaymentStatus> paymentOverview;
 
-  const PaymentStatusChart({Key? key, required this.paymentOverview})
-    : super(key: key);
+  const PaymentStatusChart({super.key, required this.paymentOverview});
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +48,7 @@ class PaymentStatusChart extends StatelessWidget {
 class _PaymentStatusItem extends StatelessWidget {
   final PaymentStatus status;
 
-  const _PaymentStatusItem({Key? key, required this.status}) : super(key: key);
+  const _PaymentStatusItem({required this.status});
 
   @override
   Widget build(BuildContext context) {

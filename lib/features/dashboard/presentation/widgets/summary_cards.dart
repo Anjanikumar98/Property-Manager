@@ -5,7 +5,7 @@ import 'package:property_manager/features/dashboard/presentation/bloc/dashboard_
 class SummaryCards extends StatelessWidget {
   final DashboardData data;
 
-  const SummaryCards({Key? key, required this.data}) : super(key: key);
+  const SummaryCards({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
@@ -83,13 +83,12 @@ class _SummaryCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const _SummaryCard({
-    Key? key,
     required this.title,
     required this.value,
     required this.icon,
     required this.color,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

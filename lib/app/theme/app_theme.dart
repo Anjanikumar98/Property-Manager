@@ -124,7 +124,7 @@ class AppTheme {
       // Input Decoration Theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: lightColorScheme.surfaceVariant.withOpacity(0.3),
+        fillColor: lightColorScheme.surfaceContainerHighest.withOpacity(0.3),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radiusMedium),
           borderSide: BorderSide(
@@ -232,7 +232,7 @@ class AppTheme {
 
       // Chip Theme
       chipTheme: ChipThemeData(
-        backgroundColor: lightColorScheme.surfaceVariant,
+        backgroundColor: lightColorScheme.surfaceContainerHighest,
         selectedColor: lightColorScheme.primaryContainer,
         disabledColor: lightColorScheme.onSurface.withOpacity(0.12),
         labelStyle: TextStyle(
@@ -272,17 +272,17 @@ class AppTheme {
 
       // Switch Theme
       switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return lightColorScheme.onPrimary;
           }
           return lightColorScheme.outline;
         }),
-        trackColor: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return lightColorScheme.primary;
           }
-          return lightColorScheme.surfaceVariant;
+          return lightColorScheme.surfaceContainerHighest;
         }),
       ),
     );

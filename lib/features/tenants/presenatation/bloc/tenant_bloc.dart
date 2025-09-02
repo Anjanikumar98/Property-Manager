@@ -1,6 +1,5 @@
 // lib/features/tenants/presentation/bloc/tenant_bloc.dart
 import 'package:bloc/bloc.dart';
-import 'package:dartz/dartz.dart';
 import 'package:property_manager/features/auth/domain/usecases/login_user.dart';
 import 'package:property_manager/features/tenants/domain/usecases/search_tenant.dart';
 import '../../../../core/errors/failures.dart';

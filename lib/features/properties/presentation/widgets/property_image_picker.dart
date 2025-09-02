@@ -9,11 +9,11 @@ class PropertyImagePicker extends StatefulWidget {
   final int maxImages;
 
   const PropertyImagePicker({
-    Key? key,
+    super.key,
     this.initialImages = const [],
     required this.onImagesChanged,
     this.maxImages = 5,
-  }) : super(key: key);
+  });
 
   @override
   State<PropertyImagePicker> createState() => _PropertyImagePickerState();

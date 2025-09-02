@@ -40,7 +40,7 @@ class StatusBadge extends StatelessWidget {
         textColor = colorScheme.info;
         break;
       case StatusType.neutral:
-        backgroundColor = colorScheme.surfaceVariant;
+        backgroundColor = colorScheme.surfaceContainerHighest;
         textColor = colorScheme.onSurfaceVariant;
         break;
     }

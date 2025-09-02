@@ -7,8 +7,7 @@ class PropertyCard extends StatelessWidget {
   final Property property;
   final VoidCallback onTap;
 
-  const PropertyCard({Key? key, required this.property, required this.onTap})
-    : super(key: key);
+  const PropertyCard({super.key, required this.property, required this.onTap});
 
   Color _getStatusColor(PropertyStatus status) {
     switch (status) {

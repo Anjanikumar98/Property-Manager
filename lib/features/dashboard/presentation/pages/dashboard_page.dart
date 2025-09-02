@@ -13,7 +13,7 @@ import '../../../../shared/widgets/loading_widget.dart';
 import '../../../../shared/widgets/error_widget.dart';
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({Key? key}) : super(key: key);
+  const DashboardPage({super.key});
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -85,7 +85,7 @@ class _DashboardPageState extends State<DashboardPage> {
 class _DashboardContent extends StatelessWidget {
   final DashboardData data;
 
-  const _DashboardContent({Key? key, required this.data}) : super(key: key);
+  const _DashboardContent({required this.data});
 
   @override
   Widget build(BuildContext context) {
@@ -282,12 +282,11 @@ class _QuickActionCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const _QuickActionCard({
-    Key? key,
     required this.title,
     required this.icon,
     required this.color,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

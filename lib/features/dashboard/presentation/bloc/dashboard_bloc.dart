@@ -1,10 +1,7 @@
 // lib/features/dashboard/presentation/bloc/dashboard_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:property_manager/core/constants/database_constants.dart';
 import 'package:property_manager/features/properties/domain/repositories/property_repository.dart';
 import 'package:property_manager/features/leases/domain/repositories/lease_repository.dart';
-import 'package:property_manager/features/payments/domain/repositories/payment_repository.dart';
-import 'package:property_manager/features/tenants/data/repositories/tenant_repository_impl.dart';
 import 'dashboard_event.dart';
 import 'dashboard_state.dart';
 

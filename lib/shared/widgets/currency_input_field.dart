@@ -13,7 +13,7 @@ class CurrencyInputField extends StatelessWidget {
   final int decimalPlaces;
 
   const CurrencyInputField({
-    Key? key,
+    super.key,
     this.controller,
     this.labelText,
     this.hintText,
@@ -23,7 +23,7 @@ class CurrencyInputField extends StatelessWidget {
     this.enabled = true,
     this.currencySymbol = '\$',
     this.decimalPlaces = 2,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

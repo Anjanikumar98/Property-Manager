@@ -59,6 +59,7 @@ class UserModel extends User {
     return UserModel.fromJson(json);
   }
 
+  @override
   UserModel copyWith({
     String? id,
     String? name,

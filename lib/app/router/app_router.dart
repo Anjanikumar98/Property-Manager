@@ -1,19 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../features/auth/presentation/pages/login_page.dart';
-import '../../features/auth/presentation/pages/register_page.dart';
-import '../../features/dashboard/presentation/pages/dashboard_page.dart';
-import '../../features/properties/presentation/pages/properties_list_page.dart';
-import '../../features/properties/presentation/pages/add_property_page.dart';
-import '../../features/properties/presentation/pages/property_detail_page.dart';
-import '../../features/leases/presentation/pages/leases_list_page.dart';
-import '../../features/leases/presentation/pages/create_lease_page.dart';
-import '../../features/leases/presentation/pages/lease_detail_page.dart';
-import '../../features/payments/presentation/pages/payments_list_page.dart';
-import '../../features/payments/presentation/pages/record_payment_page.dart';
-import '../../features/payments/presentation/pages/payment_detail_page.dart';
-import '../../features/reports/presentation/pages/reports_page.dart';
-import '../../features/reports/presentation/pages/detailed_report_page.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
