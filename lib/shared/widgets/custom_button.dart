@@ -125,3 +125,4 @@ class CustomButton extends StatelessWidget {
 enum ButtonType { primary, secondary, text }
 
 enum ButtonSize { small, medium, large }
+

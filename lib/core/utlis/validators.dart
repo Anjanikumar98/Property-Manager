@@ -318,7 +318,6 @@ class Validators {
     return null;
   }
 
-  // Description validation
   static String? validateDescription(
     String? value, {
     bool required = false,

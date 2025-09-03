@@ -7,7 +7,6 @@ class CustomTextField extends StatelessWidget {
   final String? labelText;
   final String? hintText;
   final String? helperText;
-  final String? errorText;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final bool obscureText;
@@ -25,6 +24,8 @@ class CustomTextField extends StatelessWidget {
   final bool enabled;
   final TextCapitalization textCapitalization;
   final FocusNode? focusNode;
+  final TextStyle? style;
+  final TextStyle? labelStyle;
 
   const CustomTextField({
     super.key,
@@ -32,7 +33,6 @@ class CustomTextField extends StatelessWidget {
     this.labelText,
     this.hintText,
     this.helperText,
-    this.errorText,
     this.prefixIcon,
     this.suffixIcon,
     this.obscureText = false,
@@ -50,7 +50,12 @@ class CustomTextField extends StatelessWidget {
     this.enabled = true,
     this.textCapitalization = TextCapitalization.none,
     this.focusNode,
-  });
+    this.style,
+    this.labelStyle,
+  }) : assert(
+         !(obscureText && maxLines != 1),
+         'ObscureText cannot be used with multiple lines.',
+       );
 
   @override
   Widget build(BuildContext context) {
@@ -71,11 +76,12 @@ class CustomTextField extends StatelessWidget {
       enabled: enabled,
       textCapitalization: textCapitalization,
       focusNode: focusNode,
+      style: style,
       decoration: InputDecoration(
         labelText: labelText,
+        labelStyle: labelStyle,
         hintText: hintText,
         helperText: helperText,
-        errorText: errorText,
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
         border: const OutlineInputBorder(),
@@ -110,6 +116,7 @@ class CustomTextField extends StatelessWidget {
     );
   }
 }
+
 
 // class CustomTextField extends StatelessWidget {
 //   final String? label;

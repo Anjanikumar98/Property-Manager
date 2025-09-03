@@ -11,6 +11,7 @@ class CurrencyInputField extends StatelessWidget {
   final bool enabled;
   final String currencySymbol;
   final int decimalPlaces;
+  final Widget? prefixIcon;
 
   const CurrencyInputField({
     super.key,
@@ -23,6 +24,7 @@ class CurrencyInputField extends StatelessWidget {
     this.enabled = true,
     this.currencySymbol = '\$',
     this.decimalPlaces = 2,
+    this.prefixIcon,
   });
 
   @override
@@ -38,6 +40,7 @@ class CurrencyInputField extends StatelessWidget {
       onChanged: onChanged,
       enabled: enabled,
       decoration: InputDecoration(
+        prefixIcon: prefixIcon,
         labelText: labelText,
         hintText: hintText,
         helperText: helperText,

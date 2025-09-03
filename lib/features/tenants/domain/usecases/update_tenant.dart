@@ -4,6 +4,7 @@ import 'package:property_manager/features/tenants/data/repositories/tenant_repos
 import '../../../../core/errors/failures.dart';
 import '../entities/tenant.dart';
 
+
 class UpdateTenant implements UseCase<Tenant, UpdateTenantParams> {
   final TenantRepository repository;
 
