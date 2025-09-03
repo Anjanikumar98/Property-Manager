@@ -136,4 +136,3 @@ class TenantModel extends Tenant {
     );
   }
 }
-
