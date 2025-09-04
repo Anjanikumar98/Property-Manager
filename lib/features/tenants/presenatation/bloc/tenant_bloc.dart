@@ -206,7 +206,7 @@ class TenantBloc extends Bloc<TenantEvent, TenantState> {
         (t) => t.id == event.tenantId,
       );
 
-      final updatedTenant = tenant.copyWith(isActive: true);
+      final updatedTenant = tenant.copyWith(status: TenantStatus.active);
       add(UpdateTenantEvent(updatedTenant));
     }
   }
@@ -221,7 +221,7 @@ class TenantBloc extends Bloc<TenantEvent, TenantState> {
         (t) => t.id == event.tenantId,
       );
 
-      final updatedTenant = tenant.copyWith(isActive: false);
+      final updatedTenant = tenant.copyWith(status: TenantStatus.inactive);
       add(UpdateTenantEvent(updatedTenant));
     }
   }

@@ -15,10 +15,19 @@ class Tenant extends Equatable {
   final double? monthlyIncome;
   final String? idNumber;
   final String? notes;
-  final List<String> propertyIds; // Properties this tenant is associated with
-  final bool isActive;
+  final List<String> propertyIds;
+  final TenantStatus status;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  // New fields for enhanced functionality
+  final List<ContactInfo> contactHistory;
+  final List<AddressHistory> addressHistory;
+  final List<CommunicationLog> communicationHistory;
+  final List<PaymentHistory> paymentHistory;
+  final DateTime? leaseStartDate;
+  final DateTime? leaseEndDate;
+  final String? previousTenantId; // For tracking tenant relationships
 
   const Tenant({
     this.id,
@@ -35,12 +44,23 @@ class Tenant extends Equatable {
     this.idNumber,
     this.notes,
     this.propertyIds = const [],
-    this.isActive = true,
+    this.status = TenantStatus.active,
     required this.createdAt,
     required this.updatedAt,
+    this.contactHistory = const [],
+    this.addressHistory = const [],
+    this.communicationHistory = const [],
+    this.paymentHistory = const [],
+    this.leaseStartDate,
+    this.leaseEndDate,
+    this.previousTenantId,
   });
 
   String get fullName => '$firstName $lastName';
+
+  bool get isActive => status == TenantStatus.active;
+
+  bool get isFormer => status == TenantStatus.former;
 
   Tenant copyWith({
     String? id,
@@ -57,9 +77,16 @@ class Tenant extends Equatable {
     String? idNumber,
     String? notes,
     List<String>? propertyIds,
-    bool? isActive,
+    TenantStatus? status,
     DateTime? createdAt,
     DateTime? updatedAt,
+    List<ContactInfo>? contactHistory,
+    List<AddressHistory>? addressHistory,
+    List<CommunicationLog>? communicationHistory,
+    List<PaymentHistory>? paymentHistory,
+    DateTime? leaseStartDate,
+    DateTime? leaseEndDate,
+    String? previousTenantId,
   }) {
     return Tenant(
       id: id ?? this.id,
@@ -77,9 +104,16 @@ class Tenant extends Equatable {
       idNumber: idNumber ?? this.idNumber,
       notes: notes ?? this.notes,
       propertyIds: propertyIds ?? this.propertyIds,
-      isActive: isActive ?? this.isActive,
+      status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      contactHistory: contactHistory ?? this.contactHistory,
+      addressHistory: addressHistory ?? this.addressHistory,
+      communicationHistory: communicationHistory ?? this.communicationHistory,
+      paymentHistory: paymentHistory ?? this.paymentHistory,
+      leaseStartDate: leaseStartDate ?? this.leaseStartDate,
+      leaseEndDate: leaseEndDate ?? this.leaseEndDate,
+      previousTenantId: previousTenantId ?? this.previousTenantId,
     );
   }
 
@@ -99,10 +133,178 @@ class Tenant extends Equatable {
     idNumber,
     notes,
     propertyIds,
-    isActive,
+    status,
     createdAt,
     updatedAt,
+    contactHistory,
+    addressHistory,
+    communicationHistory,
+    paymentHistory,
+    leaseStartDate,
+    leaseEndDate,
+    previousTenantId,
   ];
 }
 
+enum TenantStatus { active, inactive, former, pending, suspended }
 
+class ContactInfo extends Equatable {
+  final String? id;
+  final String type; // 'email', 'phone', 'emergency_contact'
+  final String value;
+  final String? description;
+  final DateTime validFrom;
+  final DateTime? validTo;
+  final DateTime createdAt;
+
+  const ContactInfo({
+    this.id,
+    required this.type,
+    required this.value,
+    this.description,
+    required this.validFrom,
+    this.validTo,
+    required this.createdAt,
+  });
+
+  @override
+  List<Object?> get props => [
+    id,
+    type,
+    value,
+    description,
+    validFrom,
+    validTo,
+    createdAt,
+  ];
+}
+
+class AddressHistory extends Equatable {
+  final String? id;
+  final String address;
+  final String? city;
+  final String? state;
+  final String? zipCode;
+  final String? country;
+  final DateTime validFrom;
+  final DateTime? validTo;
+  final DateTime createdAt;
+
+  const AddressHistory({
+    this.id,
+    required this.address,
+    this.city,
+    this.state,
+    this.zipCode,
+    this.country,
+    required this.validFrom,
+    this.validTo,
+    required this.createdAt,
+  });
+
+  @override
+  List<Object?> get props => [
+    id,
+    address,
+    city,
+    state,
+    zipCode,
+    country,
+    validFrom,
+    validTo,
+    createdAt,
+  ];
+}
+
+class CommunicationLog extends Equatable {
+  final String? id;
+  final String tenantId;
+  final CommunicationType type;
+  final String subject;
+  final String? content;
+  final CommunicationMethod method;
+  final DateTime communicatedAt;
+  final String? initiatedBy;
+  final Map<String, dynamic>? metadata;
+
+  const CommunicationLog({
+    this.id,
+    required this.tenantId,
+    required this.type,
+    required this.subject,
+    this.content,
+    required this.method,
+    required this.communicatedAt,
+    this.initiatedBy,
+    this.metadata,
+  });
+
+  @override
+  List<Object?> get props => [
+    id,
+    tenantId,
+    type,
+    subject,
+    content,
+    method,
+    communicatedAt,
+    initiatedBy,
+    metadata,
+  ];
+}
+
+enum CommunicationType {
+  inquiry,
+  complaint,
+  maintenance,
+  payment,
+  lease,
+  general,
+  emergency,
+}
+
+enum CommunicationMethod { email, phone, inPerson, sms, mail, other }
+
+class PaymentHistory extends Equatable {
+  final String? id;
+  final String tenantId;
+  final double amount;
+  final String type; // 'rent', 'deposit', 'fee', 'refund'
+  final String? description;
+  final DateTime paidAt;
+  final PaymentMethod method;
+  final PaymentStatus status;
+  final String? transactionId;
+  final Map<String, dynamic>? metadata;
+
+  const PaymentHistory({
+    this.id,
+    required this.tenantId,
+    required this.amount,
+    required this.type,
+    this.description,
+    required this.paidAt,
+    required this.method,
+    required this.status,
+    this.transactionId,
+    this.metadata,
+  });
+
+  @override
+  List<Object?> get props => [
+    id,
+    tenantId,
+    amount,
+    type,
+    description,
+    paidAt,
+    method,
+    status,
+    transactionId,
+    metadata,
+  ];
+}
+
+enum PaymentMethod { cash, check, creditCard, debitCard, bankTransfer, other }
+
+enum PaymentStatus { pending, completed, failed, refunded, disputed }

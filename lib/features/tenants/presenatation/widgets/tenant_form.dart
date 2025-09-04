@@ -10,6 +10,9 @@ import '../../domain/entities/tenant.dart';
 import '../../domain/usecases/add_tenant.dart';
 import '../bloc/tenant_bloc.dart' as tenant_bloc;
 import '../bloc/tenant_event.dart';
+import '../bloc/tenant_event.dart'
+    as tenant_bloc
+    show AddTenantEvent, UpdateTenantEvent;
 
 class TenantForm extends StatefulWidget {
   final Tenant? tenant;
@@ -441,26 +444,27 @@ class _TenantFormState extends State<TenantForm> {
                 ? null
                 : _notesController.text.trim(),
         propertyIds: _selectedPropertyIds,
-        isActive: _isActive,
+        //   isActive: _isActive,
         createdAt: widget.tenant?.createdAt ?? now,
         updatedAt: now,
       );
 
-      // if (widget.tenant == null) {
-      //   // Adding a new tenant
-      //   context.read<tenant_bloc.TenantBloc>().add(
-      //     tenant_bloc.AddTenantEvent(
-      //       tenant,
-      //     ), // make sure the event class is AddTenantEvent
-      //   );
-      // } else {
-      //   // Updating an existing tenant
-      //   context.read<tenant_bloc.TenantBloc>().add(
-      //     tenant_bloc.UpdateTenantEvent(
-      //       tenant,
-      //     ), // make sure the event class is UpdateTenantEvent
-      //   );
-      // }
+      if (widget.tenant == null) {
+        // Adding a new tenant
+        context.read<tenant_bloc.TenantBloc>().add(
+          tenant_bloc.AddTenantEvent(
+            tenant,
+          ), // make sure the event class is AddTenantEvent
+        );
+      } else {
+        // Updating an existing tenant
+        context.read<tenant_bloc.TenantBloc>().add(
+          tenant_bloc.UpdateTenantEvent(
+            tenant,
+          ), // make sure the event class is UpdateTenantEvent
+        );
+      }
     }
   }
 }
+
