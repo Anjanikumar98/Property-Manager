@@ -64,7 +64,7 @@ class TenantLocalDatasourceImpl implements TenantLocalDatasource {
       final maps = await db.query(
         _tableName,
         where: 'propertyIds LIKE ?',
-        whereArgs: ['%"$propertyId"%'],
+        whereArgs: ['%$propertyId%'],
         orderBy: 'firstName ASC, lastName ASC',
       );
       return maps.map((map) => TenantModel.fromJson(map)).toList();
@@ -104,8 +104,10 @@ class TenantLocalDatasourceImpl implements TenantLocalDatasource {
   Future<TenantModel> addTenant(TenantModel tenant) async {
     try {
       final db = await DatabaseService.database;
-      final id = await db.insert(_tableName, tenant.toJson());
+      final tenantData = tenant.toJson();
+      tenantData.remove('id'); // Remove ID for auto-increment
 
+      final id = await db.insert(_tableName, tenantData);
       return tenant.copyWith(id: id.toString());
     } catch (e) {
       throw CacheException('Failed to add tenant: $e');

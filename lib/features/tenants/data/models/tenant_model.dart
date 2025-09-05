@@ -17,14 +17,21 @@ class TenantModel extends Tenant {
     super.idNumber,
     super.notes,
     super.propertyIds,
-    //  super.isActive = true,
+    super.status = TenantStatus.active,
     required super.createdAt,
     required super.updatedAt,
+    super.contactHistory,
+    super.addressHistory,
+    super.communicationHistory,
+    super.paymentHistory,
+    super.leaseStartDate,
+    super.leaseEndDate,
+    super.previousTenantId,
   });
 
   factory TenantModel.fromJson(Map<String, dynamic> json) {
     return TenantModel(
-      id: json['id'],
+      id: json['id']?.toString(),
       firstName: json['firstName'] ?? '',
       lastName: json['lastName'] ?? '',
       email: json['email'] ?? '',
@@ -44,11 +51,13 @@ class TenantModel extends Tenant {
       idNumber: json['idNumber'],
       notes: json['notes'],
       propertyIds:
-          (json['propertyIds'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          [],
-      //  isActive: json['isActive'] ?? true,
+          json['propertyIds'] != null
+              ? (json['propertyIds'] as String)
+                  .split(',')
+                  .where((id) => id.isNotEmpty)
+                  .toList()
+              : [],
+      status: _parseStatus(json['isActive']),
       createdAt:
           json['createdAt'] != null
               ? DateTime.parse(json['createdAt'])
@@ -57,6 +66,17 @@ class TenantModel extends Tenant {
           json['updatedAt'] != null
               ? DateTime.parse(json['updatedAt'])
               : DateTime.now(),
+      leaseStartDate:
+          json['leaseStartDate'] != null
+              ? DateTime.tryParse(json['leaseStartDate'])
+              : null,
+      leaseEndDate:
+          json['leaseEndDate'] != null
+              ? DateTime.tryParse(json['leaseEndDate'])
+              : null,
+      previousTenantId: json['previousTenantId'],
+      // Note: Complex fields like contactHistory, addressHistory, etc.
+      // would typically be stored in separate tables and joined
     );
   }
 
@@ -75,11 +95,21 @@ class TenantModel extends Tenant {
       'monthlyIncome': monthlyIncome,
       'idNumber': idNumber,
       'notes': notes,
-      'propertyIds': propertyIds,
-      'isActive': isActive,
+      'propertyIds': propertyIds.join(','),
+      'isActive': status == TenantStatus.active ? 1 : 0,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'leaseStartDate': leaseStartDate?.toIso8601String(),
+      'leaseEndDate': leaseEndDate?.toIso8601String(),
+      'previousTenantId': previousTenantId,
     };
+  }
+
+  static TenantStatus _parseStatus(dynamic isActive) {
+    if (isActive == 1 || isActive == true) {
+      return TenantStatus.active;
+    }
+    return TenantStatus.inactive;
   }
 
   factory TenantModel.fromEntity(Tenant tenant) {
@@ -98,9 +128,16 @@ class TenantModel extends Tenant {
       idNumber: tenant.idNumber,
       notes: tenant.notes,
       propertyIds: tenant.propertyIds,
-      //  isActive: tenant.isActive,
+      status: tenant.status,
       createdAt: tenant.createdAt,
       updatedAt: tenant.updatedAt,
+      contactHistory: tenant.contactHistory,
+      addressHistory: tenant.addressHistory,
+      communicationHistory: tenant.communicationHistory,
+      paymentHistory: tenant.paymentHistory,
+      leaseStartDate: tenant.leaseStartDate,
+      leaseEndDate: tenant.leaseEndDate,
+      previousTenantId: tenant.previousTenantId,
     );
   }
 
@@ -120,18 +157,16 @@ class TenantModel extends Tenant {
     String? idNumber,
     String? notes,
     List<String>? propertyIds,
-    bool? isActive,
+    TenantStatus? status,
     DateTime? createdAt,
     DateTime? updatedAt,
-    // 👇 Add all missing ones from Tenant entity
+    List<ContactInfo>? contactHistory,
     List<AddressHistory>? addressHistory,
     List<CommunicationLog>? communicationHistory,
-    List<ContactInfo>? contactHistory,
-    DateTime? leaseEndDate,
-    DateTime? leaseStartDate,
     List<PaymentHistory>? paymentHistory,
+    DateTime? leaseStartDate,
+    DateTime? leaseEndDate,
     String? previousTenantId,
-    TenantStatus? status,
   }) {
     return TenantModel(
       id: id ?? this.id,
@@ -149,11 +184,16 @@ class TenantModel extends Tenant {
       idNumber: idNumber ?? this.idNumber,
       notes: notes ?? this.notes,
       propertyIds: propertyIds ?? this.propertyIds,
-      // isActive: isActive ?? this.isActive,
+      status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      // Pass-through extra fields if needed
-      // (TenantModel must support them if Tenant does!)
+      contactHistory: contactHistory ?? this.contactHistory,
+      addressHistory: addressHistory ?? this.addressHistory,
+      communicationHistory: communicationHistory ?? this.communicationHistory,
+      paymentHistory: paymentHistory ?? this.paymentHistory,
+      leaseStartDate: leaseStartDate ?? this.leaseStartDate,
+      leaseEndDate: leaseEndDate ?? this.leaseEndDate,
+      previousTenantId: previousTenantId ?? this.previousTenantId,
     );
   }
 }
