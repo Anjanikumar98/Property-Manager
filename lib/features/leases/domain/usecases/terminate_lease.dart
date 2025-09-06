@@ -11,12 +11,12 @@ class TerminateLease {
 
   TerminateLease(this.repository);
 
-  // Future<Either<Failure, Lease>> call(TerminateLeaseParams params) async {
-  //   return await repository.terminateLease(
-  //     params.leaseId,
-  //     params.terminationDate,
-  //   );
-  // }
+  Future<Either<Failure, Lease>> call(TerminateLeaseParams params) async {
+    return await repository.terminateLease(
+      params.leaseId,
+      params.terminationDate,
+    );
+  }
 }
 
 class TerminateLeaseParams extends Equatable {

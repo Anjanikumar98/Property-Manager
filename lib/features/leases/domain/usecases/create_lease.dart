@@ -11,9 +11,9 @@ class CreateLease {
 
   CreateLease(this.repository);
 
-  // Future<Either<Failure, Lease>> call(CreateLeaseParams params) async {
-  //   return await repository.createLease(params.lease);
-  // }
+  Future<Either<Failure, Lease>> call(CreateLeaseParams params) async {
+    return await repository.createLease(params.lease);
+  }
 }
 
 class CreateLeaseParams extends Equatable {
