@@ -2,6 +2,8 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../constants/database_constants.dart';
+import '../../features/leases/data/models/lease_model.dart';
+import '../../features/leases/domain/entities/lease.dart';
 
 class DatabaseService {
   static DatabaseService? _instance;
@@ -201,6 +203,100 @@ class DatabaseService {
     if (oldVersion < 2) {
       // Add new columns or tables for version 2
     }
+  }
+
+  // Lease-related methods
+  Future<List<Lease>> getLeases() async {
+    final db = await database;
+    final maps = await db.query(DatabaseConstants.leasesTable);
+    return maps.map((map) => LeaseModel.fromMap(map).toEntity()).toList();
+  }
+
+  Future<Lease?> getLeaseById(String id) async {
+    final db = await database;
+    final maps = await db.query(
+      DatabaseConstants.leasesTable,
+      where: '${DatabaseConstants.leaseId} = ?',
+      whereArgs: [id],
+    );
+    if (maps.isEmpty) return null;
+    return LeaseModel.fromMap(maps.first).toEntity();
+  }
+
+  Future<List<Lease>> getLeasesByProperty(String propertyId) async {
+    final db = await database;
+    final maps = await db.query(
+      DatabaseConstants.leasesTable,
+      where: '${DatabaseConstants.leasePropertyId} = ?',
+      whereArgs: [propertyId],
+    );
+    return maps.map((map) => LeaseModel.fromMap(map).toEntity()).toList();
+  }
+
+  Future<List<Lease>> getLeasesByTenant(String tenantId) async {
+    final db = await database;
+    final maps = await db.query(
+      DatabaseConstants.leasesTable,
+      where: '${DatabaseConstants.leaseTenantId} = ?',
+      whereArgs: [tenantId],
+    );
+    return maps.map((map) => LeaseModel.fromMap(map).toEntity()).toList();
+  }
+
+  Future<List<Lease>> getActiveLeases() async {
+    final db = await database;
+    final now = DateTime.now().toIso8601String();
+    final maps = await db.query(
+      DatabaseConstants.leasesTable,
+      where:
+          '${DatabaseConstants.leaseStatus} = ? AND ${DatabaseConstants.leaseEndDate} > ?',
+      whereArgs: [LeaseStatus.active.index, now],
+    );
+    return maps.map((map) => LeaseModel.fromMap(map).toEntity()).toList();
+  }
+
+  Future<List<Lease>> getExpiringLeases() async {
+    final db = await database;
+    final now = DateTime.now();
+    final thirtyDaysFromNow =
+        now.add(const Duration(days: 30)).toIso8601String();
+    final maps = await db.query(
+      DatabaseConstants.leasesTable,
+      where:
+          '${DatabaseConstants.leaseEndDate} <= ? AND ${DatabaseConstants.leaseStatus} = ?',
+      whereArgs: [thirtyDaysFromNow, LeaseStatus.active.index],
+    );
+    return maps.map((map) => LeaseModel.fromMap(map).toEntity()).toList();
+  }
+
+  Future<Lease> insertLease(LeaseModel lease) async {
+    final db = await database;
+    await db.insert(
+      DatabaseConstants.leasesTable,
+      lease.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+    return lease.toEntity();
+  }
+
+  Future<Lease> updateLease(LeaseModel lease) async {
+    final db = await database;
+    await db.update(
+      DatabaseConstants.leasesTable,
+      lease.toMap(),
+      where: '${DatabaseConstants.leaseId} = ?',
+      whereArgs: [lease.id],
+    );
+    return lease.toEntity();
+  }
+
+  Future<void> deleteLease(String id) async {
+    final db = await database;
+    await db.delete(
+      DatabaseConstants.leasesTable,
+      where: '${DatabaseConstants.leaseId} = ?',
+      whereArgs: [id],
+    );
   }
 
   static Future<void> closeDatabase() async {

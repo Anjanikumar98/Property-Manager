@@ -76,6 +76,51 @@ class LeaseModel extends Lease {
     );
   }
 
+  // Added fromMap method for database operations
+  factory LeaseModel.fromMap(Map<String, dynamic> map) {
+    final startDate = DateTime.parse(map['startDate']);
+    final endDate = DateTime.parse(map['endDate']);
+    final now = DateTime.now();
+
+    final totalDays = endDate.difference(startDate).inDays;
+    final remainingDays = endDate.difference(now).inDays;
+    final status = LeaseStatus.values[map['status'] as int];
+    final isActive =
+        status == LeaseStatus.active &&
+        now.isAfter(startDate) &&
+        now.isBefore(endDate);
+    final noticePeriod = map['noticePeriodDays'] as int? ?? 30;
+    final isExpiringSoon = isActive && remainingDays <= noticePeriod;
+
+    return LeaseModel(
+      id: map['id'],
+      propertyId: map['propertyId'],
+      tenantId: map['tenantId'],
+      propertyName: map['propertyName'],
+      tenantName: map['tenantName'],
+      leaseType: LeaseType.values[map['leaseType'] as int],
+      status: status,
+      startDate: startDate,
+      endDate: endDate,
+      monthlyRent: (map['monthlyRent'] as num).toDouble(),
+      securityDeposit: (map['securityDeposit'] as num).toDouble(),
+      rentFrequency: RentFrequency.values[map['rentFrequency'] as int],
+      noticePeriodDays: noticePeriod,
+      specialTerms: map['specialTerms'],
+      notes: map['notes'],
+      attachments:
+          map['attachments'] != null
+              ? List<String>.from(map['attachments'].split(','))
+              : [],
+      createdAt: DateTime.parse(map['createdAt']),
+      updatedAt: DateTime.parse(map['updatedAt']),
+      totalDays: totalDays,
+      remainingDays: remainingDays,
+      isActive: isActive,
+      isExpiringSoon: isExpiringSoon,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -97,6 +142,128 @@ class LeaseModel extends Lease {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
+  }
+
+  // Added toMap method for database operations
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'propertyId': propertyId,
+      'tenantId': tenantId,
+      'propertyName': propertyName,
+      'tenantName': tenantName,
+      'leaseType': leaseType.index,
+      'status': status.index,
+      'startDate': startDate.toIso8601String(),
+      'endDate': endDate.toIso8601String(),
+      'monthlyRent': monthlyRent,
+      'securityDeposit': securityDeposit,
+      'rentFrequency': rentFrequency.index,
+      'noticePeriodDays': noticePeriodDays,
+      'specialTerms': specialTerms,
+      'notes': notes,
+      'attachments': attachments?.join(','), // Store as comma-separated string
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
+
+  // Added toEntity method to convert model back to entity
+  Lease toEntity() {
+    return Lease(
+      id: id,
+      propertyId: propertyId,
+      tenantId: tenantId,
+      propertyName: propertyName,
+      tenantName: tenantName,
+      leaseType: leaseType,
+      status: status,
+      startDate: startDate,
+      endDate: endDate,
+      monthlyRent: monthlyRent,
+      securityDeposit: securityDeposit,
+      rentFrequency: rentFrequency,
+      noticePeriodDays: noticePeriodDays,
+      specialTerms: specialTerms,
+      notes: notes,
+      attachments: attachments,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      totalDays: totalDays,
+      remainingDays: remainingDays,
+      isActive: isActive,
+      isExpiringSoon: isExpiringSoon,
+    );
+  }
+
+  // Added copyWith method for updating lease data
+  LeaseModel copyWith({
+    String? id,
+    String? propertyId,
+    String? tenantId,
+    String? propertyName,
+    String? tenantName,
+    LeaseType? leaseType,
+    LeaseStatus? status,
+    DateTime? startDate,
+    DateTime? endDate,
+    double? monthlyRent,
+    double? securityDeposit,
+    RentFrequency? rentFrequency,
+    int? noticePeriodDays,
+    String? specialTerms,
+    String? notes,
+    List<String>? attachments,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    int? totalDays,
+    int? remainingDays,
+    bool? isActive,
+    bool? isExpiringSoon,
+  }) {
+    final newStartDate = startDate ?? this.startDate;
+    final newEndDate = endDate ?? this.endDate;
+    final now = DateTime.now();
+
+    final computedTotalDays =
+        totalDays ?? newEndDate.difference(newStartDate).inDays;
+    final computedRemainingDays =
+        remainingDays ?? newEndDate.difference(now).inDays;
+    final newStatus = status ?? this.status;
+    final computedIsActive =
+        isActive ??
+        (newStatus == LeaseStatus.active &&
+            now.isAfter(newStartDate) &&
+            now.isBefore(newEndDate));
+    final newNoticePeriod = noticePeriodDays ?? this.noticePeriodDays;
+    final computedIsExpiringSoon =
+        isExpiringSoon ??
+        (computedIsActive && computedRemainingDays <= newNoticePeriod);
+
+    return LeaseModel(
+      id: id ?? this.id,
+      propertyId: propertyId ?? this.propertyId,
+      tenantId: tenantId ?? this.tenantId,
+      propertyName: propertyName ?? this.propertyName,
+      tenantName: tenantName ?? this.tenantName,
+      leaseType: leaseType ?? this.leaseType,
+      status: newStatus,
+      startDate: newStartDate,
+      endDate: newEndDate,
+      monthlyRent: monthlyRent ?? this.monthlyRent,
+      securityDeposit: securityDeposit ?? this.securityDeposit,
+      rentFrequency: rentFrequency ?? this.rentFrequency,
+      noticePeriodDays: newNoticePeriod,
+      specialTerms: specialTerms ?? this.specialTerms,
+      notes: notes ?? this.notes,
+      attachments: attachments ?? this.attachments,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      totalDays: computedTotalDays,
+      remainingDays: computedRemainingDays,
+      isActive: computedIsActive,
+      isExpiringSoon: computedIsExpiringSoon,
+    );
   }
 
   factory LeaseModel.fromEntity(Lease lease) {

@@ -34,6 +34,19 @@ class ValidationFailure extends Failure {
   const ValidationFailure(this.message);
 }
 
+// Added missing failures
+class UnknownFailure extends Failure {
+  @override
+  final String message;
+  const UnknownFailure(this.message);
+}
+
+class NotFoundFailure extends Failure {
+  @override
+  final String message;
+  const NotFoundFailure(this.message);
+}
+
 // Auth failures
 class AuthFailure extends Failure {
   @override
@@ -167,11 +180,15 @@ class FailureHandler {
     } else if (exception is ArgumentError) {
       return ValidationFailure(exception.toString());
     } else {
-      return ServerFailure(exception.toString());
+      return UnknownFailure('Exception occurred: ${exception.toString()}');
     }
   }
 
   static Failure handleError(Error error) {
-    return ServerFailure(error.toString());
+    return UnknownFailure('Error occurred: ${error.toString()}');
+  }
+
+  static Failure handleUnknown(dynamic error) {
+    return UnknownFailure('Unknown error occurred: ${error.toString()}');
   }
 }
