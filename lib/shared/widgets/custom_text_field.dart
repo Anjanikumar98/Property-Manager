@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 class CustomTextField extends StatelessWidget {
   final TextEditingController? controller;
+  final String? initialValue;
   final String? labelText;
   final String? hintText;
   final String? helperText;
@@ -30,6 +31,7 @@ class CustomTextField extends StatelessWidget {
   const CustomTextField({
     super.key,
     this.controller,
+    this.initialValue,
     this.labelText,
     this.hintText,
     this.helperText,
@@ -61,6 +63,7 @@ class CustomTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
+      initialValue: controller == null ? initialValue : null,
       obscureText: obscureText,
       keyboardType: keyboardType,
       textInputAction: textInputAction,
@@ -116,7 +119,6 @@ class CustomTextField extends StatelessWidget {
     );
   }
 }
-
 
 // class CustomTextField extends StatelessWidget {
 //   final String? label;

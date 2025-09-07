@@ -9,6 +9,8 @@ class CustomButton extends StatelessWidget {
   final ButtonSize size;
   final bool isLoading;
   final bool isFullWidth;
+  final Color? backgroundColor;
+  final Color? textColor;
 
   const CustomButton({
     super.key,
@@ -19,6 +21,8 @@ class CustomButton extends StatelessWidget {
     this.size = ButtonSize.medium,
     this.isLoading = false,
     this.isFullWidth = false,
+    this.backgroundColor,
+    this.textColor,
   });
 
   @override
@@ -50,16 +54,51 @@ class CustomButton extends StatelessWidget {
   }
 
   Widget _buildElevatedButton() {
-    return ElevatedButton(onPressed: onPressed, child: _buildButtonContent());
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: backgroundColor,
+        foregroundColor: textColor,
+        minimumSize: Size(0, _getButtonHeight()),
+      ),
+      child: _buildButtonContent(),
+    );
   }
 
+  // Widget _buildElevatedButton() {
+  //   return ElevatedButton(onPressed: onPressed, child: _buildButtonContent());
+  // }
+
   Widget _buildOutlinedButton() {
-    return OutlinedButton(onPressed: onPressed, child: _buildButtonContent());
+    return OutlinedButton(
+      onPressed: onPressed,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: textColor,
+        side: BorderSide(color: backgroundColor ?? Colors.grey),
+        minimumSize: Size(0, _getButtonHeight()),
+      ),
+      child: _buildButtonContent(),
+    );
   }
 
   Widget _buildTextButton() {
-    return TextButton(onPressed: onPressed, child: _buildButtonContent());
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        foregroundColor: textColor ?? backgroundColor,
+        minimumSize: Size(0, _getButtonHeight()),
+      ),
+      child: _buildButtonContent(),
+    );
   }
+
+  // Widget _buildOutlinedButton() {
+  //   return OutlinedButton(onPressed: onPressed, child: _buildButtonContent());
+  // }
+  //
+  // Widget _buildTextButton() {
+  //   return TextButton(onPressed: onPressed, child: _buildButtonContent());
+  // }
 
   Widget _buildLoadingButton(ThemeData theme) {
     return ElevatedButton(
@@ -125,4 +164,3 @@ class CustomButton extends StatelessWidget {
 enum ButtonType { primary, secondary, text }
 
 enum ButtonSize { small, medium, large }
-
