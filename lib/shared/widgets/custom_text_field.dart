@@ -10,6 +10,7 @@ class CustomTextField extends StatelessWidget {
   final String? helperText;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
+  final String? prefixText;
   final bool obscureText;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
@@ -37,6 +38,7 @@ class CustomTextField extends StatelessWidget {
     this.helperText,
     this.prefixIcon,
     this.suffixIcon,
+    this.prefixText,
     this.obscureText = false,
     this.keyboardType,
     this.textInputAction,
@@ -87,6 +89,7 @@ class CustomTextField extends StatelessWidget {
         helperText: helperText,
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
+        prefixText: prefixText,
         border: const OutlineInputBorder(),
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(color: Colors.grey.shade400, width: 1),
@@ -119,6 +122,7 @@ class CustomTextField extends StatelessWidget {
     );
   }
 }
+
 
 // class CustomTextField extends StatelessWidget {
 //   final String? label;
