@@ -1,22 +1,36 @@
 // lib/features/payments/domain/repositories/payment_repository.dart
-import 'package:property_manager/features/payments/domain/entities/payment.dart';
+import 'package:dartz/dartz.dart';
+import '../../../../core/errors/failures.dart';
+import '../entities/payment.dart';
 
 abstract class PaymentRepository {
-  Future<List<Payment>> getPayments();
-  Future<Payment?> getPaymentById(String id);
-  Future<List<Payment>> getPaymentsByLeaseId(String leaseId);
-  Future<List<Payment>> getPaymentsByPropertyId(String propertyId);
-  Future<List<Payment>> getPaymentsByTenantId(String tenantId);
-  Future<List<Payment>> getPaymentsByStatus(String status);
-  Future<List<Payment>> getPaymentsByDateRange(
-    DateTime startDate,
-    DateTime endDate,
-  );
-  Future<List<Payment>> getOverduePayments();
-  Future<String> recordPayment(Payment payment);
-  Future<void> updatePayment(Payment payment);
-  Future<void> deletePayment(String id);
-  Future<double> getTotalRevenue();
-  Future<double> getMonthlyRevenue(DateTime month);
-}
+  Future<Either<Failure, List<Payment>>> getPayments({
+    String? leaseId,
+    String? tenantId,
+    String? propertyId,
+    PaymentStatus? status,
+    DateTime? startDate,
+    DateTime? endDate,
+  });
 
+  Future<Either<Failure, Payment>> getPaymentById(String id);
+
+  Future<Either<Failure, Payment>> recordPayment(Payment payment);
+
+  Future<Either<Failure, Payment>> updatePayment(Payment payment);
+
+  Future<Either<Failure, void>> deletePayment(String id);
+
+  Future<Either<Failure, List<Payment>>> getOverduePayments({
+    String? tenantId,
+    String? propertyId,
+  });
+
+  Future<Either<Failure, Map<String, double>>> getPaymentSummary({
+    String? leaseId,
+    String? tenantId,
+    String? propertyId,
+    DateTime? startDate,
+    DateTime? endDate,
+  });
+}

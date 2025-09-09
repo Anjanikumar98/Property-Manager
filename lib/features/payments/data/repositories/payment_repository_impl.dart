@@ -1,167 +1,115 @@
-// // lib/features/payments/data/repositories/payment_repository_impl.dart
-// import 'package:property_manager/features/payments/data/models/payment_model.dart';
-// import 'package:property_manager/features/payments/domain/entities/payment.dart';
-// import '../../domain/repositories/payment_repository.dart';
-// import '../../../../core/services/database_service.dart';
-//
-// class PaymentRepositoryImpl implements PaymentRepository {
-//   // final DatabaseService _databaseService = DatabaseService.instance;
-//
-//   @override
-//   Future<List<Payment>> getPayments() async {
-//     final db = await DatabaseService.database;
-//     final maps = await db.query('payments', orderBy: 'payment_date DESC');
-//
-//     return maps.map((map) => PaymentModel.fromJson(map)).toList();
-//   }
-//
-//   @override
-//   Future<Payment?> getPaymentById(String id) async {
-//     final db = await DatabaseService.database;
-//     final maps = await db.query('payments', where: 'id = ?', whereArgs: [id]);
-//
-//     if (maps.isNotEmpty) {
-//       return PaymentModel.fromJson(maps.first);
-//     }
-//     return null;
-//   }
-//
-//   @override
-//   Future<List<Payment>> getPaymentsByLeaseId(String leaseId) async {
-//     final db = await DatabaseService.database;
-//     final maps = await db.query(
-//       'payments',
-//       where: 'lease_id = ?',
-//       whereArgs: [leaseId],
-//       orderBy: 'payment_date DESC',
-//     );
-//
-//     return maps.map((map) => PaymentModel.fromJson(map)).toList();
-//   }
-//
-//   @override
-//   Future<List<Payment>> getPaymentsByPropertyId(String propertyId) async {
-//     final db = await DatabaseService.database;
-//     final maps = await db.query(
-//       'payments',
-//       where: 'property_id = ?',
-//       whereArgs: [propertyId],
-//       orderBy: 'payment_date DESC',
-//     );
-//
-//     return maps.map((map) => PaymentModel.fromJson(map)).toList();
-//   }
-//
-//   @override
-//   Future<List<Payment>> getPaymentsByTenantId(String tenantId) async {
-//     final db = await DatabaseService.database;
-//     final maps = await db.query(
-//       'payments',
-//       where: 'tenant_id = ?',
-//       whereArgs: [tenantId],
-//       orderBy: 'payment_date DESC',
-//     );
-//
-//     return maps.map((map) => PaymentModel.fromJson(map)).toList();
-//   }
-//
-//   @override
-//   Future<List<Payment>> getPaymentsByStatus(String status) async {
-//     final db = await DatabaseService.database;
-//     final maps = await db.query(
-//       'payments',
-//       where: 'status = ?',
-//       whereArgs: [status],
-//       orderBy: 'payment_date DESC',
-//     );
-//
-//     return maps.map((map) => PaymentModel.fromJson(map)).toList();
-//   }
-//
-//   @override
-//   Future<List<Payment>> getPaymentsByDateRange(
-//     DateTime startDate,
-//     DateTime endDate,
-//   ) async {
-//     final db = await DatabaseService.database;
-//     final maps = await db.query(
-//       'payments',
-//       where: 'payment_date BETWEEN ? AND ?',
-//       whereArgs: [startDate.toIso8601String(), endDate.toIso8601String()],
-//       orderBy: 'payment_date DESC',
-//     );
-//
-//     return maps.map((map) => PaymentModel.fromJson(map)).toList();
-//   }
-//
-//   @override
-//   Future<List<Payment>> getOverduePayments() async {
-//     final db = await DatabaseService.database;
-//     final now = DateTime.now().toIso8601String();
-//     final maps = await db.query(
-//       'payments',
-//       where: '(status = ? OR status = ?) AND due_date < ?',
-//       whereArgs: ['pending', 'partial', now],
-//       orderBy: 'due_date ASC',
-//     );
-//
-//     return maps.map((map) => PaymentModel.fromJson(map)).toList();
-//   }
-//
-//   @override
-//   Future<String> recordPayment(Payment payment) async {
-//     final db = await DatabaseService.database;
-//     final paymentModel = PaymentModel.fromEntity(payment);
-//
-//     await db.insert('payments', paymentModel.toJson());
-//     return payment.id;
-//   }
-//
-//   @override
-//   Future<void> updatePayment(Payment payment) async {
-//     final db = await DatabaseService.database;
-//     final paymentModel = PaymentModel.fromEntity(payment);
-//
-//     await db.update(
-//       'payments',
-//       paymentModel.toJson(),
-//       where: 'id = ?',
-//       whereArgs: [payment.id],
-//     );
-//   }
-//
-//   @override
-//   Future<void> deletePayment(String id) async {
-//     final db = await DatabaseService.database;
-//     await db.delete('payments', where: 'id = ?', whereArgs: [id]);
-//   }
-//
-//   @override
-//   Future<double> getTotalRevenue() async {
-//     final db = await DatabaseService.database;
-//     final result = await db.rawQuery(
-//       'SELECT SUM(amount) as total FROM payments WHERE status = ?',
-//       ['paid'],
-//     );
-//
-//     return (result.first['total'] as num?)?.toDouble() ?? 0.0;
-//   }
-//
-//   @override
-//   Future<double> getMonthlyRevenue(DateTime month) async {
-//     final db = await DatabaseService.database;
-//     final startOfMonth = DateTime(month.year, month.month, 1);
-//     final endOfMonth = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
-//
-//     final result = await db.rawQuery(
-//       '''
-//       SELECT SUM(amount) as total
-//       FROM payments
-//       WHERE status = ? AND payment_date BETWEEN ? AND ?
-//       ''',
-//       ['paid', startOfMonth.toIso8601String(), endOfMonth.toIso8601String()],
-//     );
-//
-//     return (result.first['total'] as num?)?.toDouble() ?? 0.0;
-//   }
-// }
+// lib/features/payments/data/repositories/payment_repository_impl.dart
+import 'package:dartz/dartz.dart';
+import 'package:property_manager/features/payments/data/datasources/payment_local_datasource.dart';
+import '../../../../core/errors/failures.dart';
+import '../../../../core/errors/exceptions.dart';
+import '../../domain/entities/payment.dart';
+import '../../domain/repositories/payment_repository.dart';
+
+class PaymentRepositoryImpl implements PaymentRepository {
+  final PaymentLocalDatasource localDatasource;
+
+  PaymentRepositoryImpl({required this.localDatasource});
+
+  @override
+  Future<Either<Failure, List<Payment>>> getPayments({
+    String? leaseId,
+    String? tenantId,
+    String? propertyId,
+    PaymentStatus? status,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    try {
+      final payments = await localDatasource.getPayments(
+        leaseId: leaseId,
+        tenantId: tenantId,
+        propertyId: propertyId,
+        status: status,
+        startDate: startDate,
+        endDate: endDate,
+      );
+      return Right(payments);
+    } on DatabaseException {
+      return const Left(DatabaseFailure('Failed to get payments'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Payment>> getPaymentById(String id) async {
+    try {
+      final payment = await localDatasource.getPaymentById(id);
+      return Right(payment);
+    } on DatabaseException {
+      return const Left(DatabaseFailure('Failed to get payment'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Payment>> recordPayment(Payment payment) async {
+    try {
+      final recordedPayment = await localDatasource.insertPayment(payment);
+      return Right(recordedPayment);
+    } on DatabaseException {
+      return const Left(DatabaseFailure('Failed to record payment'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Payment>> updatePayment(Payment payment) async {
+    try {
+      final updatedPayment = await localDatasource.updatePayment(payment);
+      return Right(updatedPayment);
+    } on DatabaseException {
+      return const Left(DatabaseFailure('Failed to update payment'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deletePayment(String id) async {
+    try {
+      await localDatasource.deletePayment(id);
+      return const Right(null);
+    } on DatabaseException {
+      return const Left(DatabaseFailure('Failed to delete payment'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Payment>>> getOverduePayments({
+    String? tenantId,
+    String? propertyId,
+  }) async {
+    try {
+      final overduePayments = await localDatasource.getOverduePayments(
+        tenantId: tenantId,
+        propertyId: propertyId,
+      );
+      return Right(overduePayments);
+    } on DatabaseException {
+      return const Left(DatabaseFailure('Failed to get overdue payments'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Map<String, double>>> getPaymentSummary({
+    String? leaseId,
+    String? tenantId,
+    String? propertyId,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    try {
+      final summary = await localDatasource.getPaymentSummary(
+        leaseId: leaseId,
+        tenantId: tenantId,
+        propertyId: propertyId,
+        startDate: startDate,
+        endDate: endDate,
+      );
+      return Right(summary);
+    } on DatabaseException {
+      return const Left(DatabaseFailure('Failed to get payment summary'));
+    }
+  }
+}
