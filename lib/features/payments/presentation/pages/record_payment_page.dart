@@ -128,10 +128,10 @@ class _RecordPaymentPageState extends State<RecordPaymentPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // if (widget.existingPayment != null) ...[
-                    //   PaymentStatusIndicator(payment: widget.existingPayment!),
-                    //   const SizedBox(height: 16),
-                    // ],
+                    if (widget.existingPayment != null) ...[
+                      PaymentStatusIndicator(payment: widget.existingPayment!),
+                      const SizedBox(height: 16),
+                    ],
 
                     _buildPaymentTypeSection(),
                     const SizedBox(height: 16),
@@ -373,7 +373,7 @@ class _RecordPaymentPageState extends State<RecordPaymentPage> {
                   _paidDate = date;
                 });
               },
-              //  clearable: true,
+              //    clearable: true,
             ),
           ],
         ),
