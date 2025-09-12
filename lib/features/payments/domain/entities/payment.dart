@@ -157,6 +157,12 @@ extension PaymentCalculations on Payment {
         return '#2196F3'; // Blue
       case PaymentStatus.cancelled:
         return '#9E9E9E'; // Grey
+      case PaymentStatus.paid:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PaymentStatus.partial:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
   }
 
@@ -173,6 +179,12 @@ extension PaymentCalculations on Payment {
         return 'Partially Paid';
       case PaymentStatus.cancelled:
         return 'Cancelled';
+      case PaymentStatus.paid:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PaymentStatus.partial:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
   }
 
@@ -191,10 +203,31 @@ extension PaymentCalculations on Payment {
         return 'Late Fee';
       case PaymentType.other:
         return 'Other';
+      case PaymentType.utility:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
   }
 }
 
-enum PaymentStatus { pending, completed, overdue, partiallyPaid, cancelled }
+enum PaymentStatus {
+  pending,
+  completed,
+  overdue,
+  partiallyPaid,
+  cancelled,
+  paid,
+  partial,
+}
 
-enum PaymentType { rent, deposit, utilities, maintenance, lateFee, other }
+enum PaymentType {
+  rent,
+  deposit,
+  utilities,
+  maintenance,
+  lateFee,
+  other,
+  utility,
+}
+
+

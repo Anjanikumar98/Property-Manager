@@ -263,6 +263,12 @@ class PaymentCard extends StatelessWidget {
         return Colors.blue;
       case PaymentStatus.cancelled:
         return Colors.grey;
+      case PaymentStatus.paid:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PaymentStatus.partial:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
   }
 }

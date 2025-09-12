@@ -246,6 +246,9 @@ class _PaymentFormWidgetState extends State<PaymentFormWidget> {
         return 'Late Fee';
       case PaymentType.other:
         return 'Other';
+      case PaymentType.utility:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
   }
 
@@ -261,6 +264,12 @@ class _PaymentFormWidgetState extends State<PaymentFormWidget> {
         return 'Partially Paid';
       case PaymentStatus.cancelled:
         return 'Cancelled';
+      case PaymentStatus.paid:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PaymentStatus.partial:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
   }
 
@@ -314,3 +323,5 @@ class _PaymentFormWidgetState extends State<PaymentFormWidget> {
     super.dispose();
   }
 }
+
+
