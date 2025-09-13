@@ -422,6 +422,21 @@ class PaymentHistoryWidget extends StatelessWidget {
       case PaymentStatus.disputed:
         color = Colors.purple;
         break;
+      case PaymentStatus.paid:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PaymentStatus.overdue:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PaymentStatus.partial:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PaymentStatus.cancelled:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PaymentStatus.partiallyPaid:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
 
     return CircleAvatar(
@@ -501,6 +516,21 @@ class PaymentHistoryWidget extends StatelessWidget {
         return Colors.blue;
       case PaymentStatus.disputed:
         return Colors.purple;
+      case PaymentStatus.paid:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PaymentStatus.overdue:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PaymentStatus.partial:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PaymentStatus.cancelled:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PaymentStatus.partiallyPaid:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
   }
 
@@ -548,6 +578,21 @@ class PaymentHistoryWidget extends StatelessWidget {
         return 'Refunded';
       case PaymentStatus.disputed:
         return 'Disputed';
+      case PaymentStatus.paid:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PaymentStatus.overdue:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PaymentStatus.partial:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PaymentStatus.cancelled:
+        // TODO: Handle this case.
+        throw UnimplementedError();
+      case PaymentStatus.partiallyPaid:
+        // TODO: Handle this case.
+        throw UnimplementedError();
     }
   }
 
@@ -555,4 +600,3 @@ class PaymentHistoryWidget extends StatelessWidget {
     return '${date.day}/${date.month}/${date.year}';
   }
 }
-

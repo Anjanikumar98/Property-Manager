@@ -307,4 +307,4 @@ class PaymentHistory extends Equatable {
 
 enum PaymentMethod { cash, check, creditCard, debitCard, bankTransfer, other, onlinePayment }
 
-enum PaymentStatus { pending, completed, failed, refunded, disputed }
+enum PaymentStatus { pending, completed, failed, refunded, disputed, paid, overdue, partial, cancelled, partiallyPaid }

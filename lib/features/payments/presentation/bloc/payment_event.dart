@@ -1,98 +1,100 @@
-// lib/features/payments/presentation/bloc/payment_event.dart
-import 'package:equatable/equatable.dart';
-import '../../domain/entities/payment.dart';
-
-abstract class PaymentEvent extends Equatable {
-  const PaymentEvent();
-
-  @override
-  List<Object?> get props => [];
-}
-
-class LoadPayments extends PaymentEvent {
-  final String? leaseId;
-  final String? tenantId;
-  final String? propertyId;
-  final PaymentStatus? status;
-
-  const LoadPayments({
-    this.leaseId,
-    this.tenantId,
-    this.propertyId,
-    this.status,
-  });
-
-  @override
-  List<Object?> get props => [leaseId, tenantId, propertyId, status];
-}
-
-class RecordPayment extends PaymentEvent {
-  final Payment payment;
-
-  const RecordPayment(this.payment);
-
-  @override
-  List<Object> get props => [payment];
-}
-
-class UpdatePayment extends PaymentEvent {
-  final Payment payment;
-
-  const UpdatePayment(this.payment);
-
-  @override
-  List<Object> get props => [payment];
-}
-
-class RecordPartialPayment extends PaymentEvent {
-  final String paymentId;
-  final double amount;
-  final String? paymentMethod;
-  final String? reference;
-  final DateTime? paymentDate;
-
-  const RecordPartialPayment({
-    required this.paymentId,
-    required this.amount,
-    this.paymentMethod,
-    this.reference,
-    this.paymentDate,
-  });
-
-  @override
-  List<Object?> get props => [paymentId, amount, paymentMethod, reference, paymentDate];
-}
-
-class CalculateLateFees extends PaymentEvent {
-  final List<String>? paymentIds;
-
-  const CalculateLateFees({this.paymentIds});
-
-  @override
-  List<Object?> get props => [paymentIds];
-}
-
-class DeletePayment extends PaymentEvent {
-  final String paymentId;
-
-  const DeletePayment(this.paymentId);
-
-  @override
-  List<Object> get props => [paymentId];
-}
-
-class GenerateRecurringPayments extends PaymentEvent {
-  final String leaseId;
-  final DateTime startDate;
-  final DateTime endDate;
-
-  const GenerateRecurringPayments({
-    required this.leaseId,
-    required this.startDate,
-    required this.endDate,
-  });
-
-  @override
-  List<Object> get props => [leaseId, startDate, endDate];
-}
-
+// // lib/features/payments/presentation/bloc/payment_event.dart
+// abstract class PaymentEvent {}
+//
+// class LoadPaymentsEvent extends PaymentEvent {}
+//
+// class LoadPaymentHistoryEvent extends PaymentEvent {
+//   final String searchQuery;
+//   final PaymentFilter filter;
+//   final PaymentSortOption sortOption;
+//
+//   LoadPaymentHistoryEvent({
+//     this.searchQuery = '',
+//     required this.filter,
+//     this.sortOption = PaymentSortOption.dueDateDesc,
+//   });
+// }
+//
+// class LoadMorePaymentsEvent extends PaymentEvent {}
+//
+// class RecordPaymentEvent extends PaymentEvent {
+//   final PaymentModel payment;
+//
+//   RecordPaymentEvent(this.payment);
+// }
+//
+// class UpdatePaymentEvent extends PaymentEvent {
+//   final PaymentModel payment;
+//
+//   UpdatePaymentEvent(this.payment);
+// }
+//
+// class DeletePaymentEvent extends PaymentEvent {
+//   final String paymentId;
+//
+//   DeletePaymentEvent(this.paymentId);
+// }
+//
+// class GenerateReceiptEvent extends PaymentEvent {
+//   final String paymentId;
+//
+//   GenerateReceiptEvent(this.paymentId);
+// }
+//
+// class ExportPaymentsEvent extends PaymentEvent {
+//   final String searchQuery;
+//   final PaymentFilter filter;
+//   final String format; // 'pdf', 'excel', 'csv'
+//
+//   ExportPaymentsEvent({
+//     this.searchQuery = '',
+//     required this.filter,
+//     this.format = 'pdf',
+//   });
+// }
+//
+// class SchedulePaymentReminderEvent extends PaymentEvent {
+//   final String paymentId;
+//   final DateTime reminderDate;
+//   final PaymentReminderType type;
+//   final String? message;
+//
+//   SchedulePaymentReminderEvent({
+//     required this.paymentId,
+//     required this.reminderDate,
+//     required this.type,
+//     this.message,
+//   });
+// }
+//
+// class LoadOverduePaymentsEvent extends PaymentEvent {}
+//
+// class MarkPaymentAsPaidEvent extends PaymentEvent {
+//   final String paymentId;
+//   final DateTime paidDate;
+//   final PaymentMethod method;
+//   final String? transactionId;
+//
+//   MarkPaymentAsPaidEvent({
+//     required this.paymentId,
+//     required this.paidDate,
+//     required this.method,
+//     this.transactionId,
+//   });
+// }
+//
+// class SearchPaymentsEvent extends PaymentEvent {
+//   final AdvancedSearchCriteria criteria;
+//
+//   SearchPaymentsEvent(this.criteria);
+// }
+//
+// class LoadPaymentStatisticsEvent extends PaymentEvent {
+//   final DateTime startDate;
+//   final DateTime endDate;
+//
+//   LoadPaymentStatisticsEvent({
+//     required this.startDate,
+//     required this.endDate,
+//   });
+// }
