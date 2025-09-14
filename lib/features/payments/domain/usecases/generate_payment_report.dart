@@ -2,6 +2,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:property_manager/features/auth/domain/usecases/login_user.dart';
+import 'package:property_manager/features/payments/presentation/pages/payment_history_page.dart';
 import '../../../../core/errors/failures.dart';
 import '../entities/payment.dart';
 import '../repositories/payment_repository.dart';
@@ -57,6 +58,10 @@ class GeneratePaymentReport
       return Left(DatabaseFailure('Failed to generate payment report: $e'));
     }
   }
+
+  getPaymentStatistics({required DateTime startDate, required DateTime endDate}) {}
+
+  exportPayments({required String searchQuery, required PaymentFilter filter, required String format}) {}
 }
 
 class GeneratePaymentReportParams extends Equatable {
@@ -158,3 +163,4 @@ class PaymentReport extends Equatable {
   ];
 }
 
+enum PaymentStatusType { pending, paid, overdue, partial }

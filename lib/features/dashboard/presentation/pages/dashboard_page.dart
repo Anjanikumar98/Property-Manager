@@ -124,21 +124,21 @@ class _DashboardContent extends StatelessWidget {
                       children: [
                         RecentActivities(activities: data.recentActivities),
                         const SizedBox(height: 16),
-                        OccupancyOverview(
-                          totalProperties: data.totalProperties,
-                          activeLeases: data.activeLeases,
-                          vacantProperties: data.vacantProperties,
-                          occupancyRate: data.occupancyRate,
-                        ),
+                        // OccupancyOverview(
+                        //   totalProperties: data.totalProperties,
+                        //   activeLeases: data.activeLeases,
+                        //   vacantProperties: data.vacantProperties,
+                        //   occupancyRate: data.occupancyRate, occupancyData: null,
+                        // ),
                       ],
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Expanded(
-                    child: PaymentStatusChart(
-                      paymentOverview: data.paymentOverview,
-                    ),
-                  ),
+                  // Expanded(
+                  //   child: PaymentStatusChart(
+                  //     paymentOverview: data.paymentOverview,
+                  //   ),
+                  // ),
                 ],
               )
             else
@@ -146,14 +146,14 @@ class _DashboardContent extends StatelessWidget {
                 children: [
                   RecentActivities(activities: data.recentActivities),
                   const SizedBox(height: 16),
-                  PaymentStatusChart(paymentOverview: data.paymentOverview),
+                  //     PaymentStatusChart(paymentOverview: data.paymentOverview),
                   const SizedBox(height: 16),
-                  OccupancyOverview(
-                    totalProperties: data.totalProperties,
-                    activeLeases: data.activeLeases,
-                    vacantProperties: data.vacantProperties,
-                    occupancyRate: data.occupancyRate,
-                  ),
+                  // OccupancyOverview(
+                  //   totalProperties: data.totalProperties,
+                  //   activeLeases: data.activeLeases,
+                  //   vacantProperties: data.vacantProperties,
+                  //   occupancyRate: data.occupancyRate,
+                  // ),
                 ],
               ),
 
@@ -506,4 +506,3 @@ class _ProfileMenuSheet extends StatelessWidget {
     );
   }
 }
-

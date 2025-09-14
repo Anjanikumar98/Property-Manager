@@ -273,7 +273,7 @@ class PaymentHistory extends Equatable {
   final String? description;
   final DateTime paidAt;
   final PaymentMethod method;
-  final PaymentStatus status;
+  final PaymentStatusT status;
   final String? transactionId;
   final Map<String, dynamic>? metadata;
 
@@ -307,4 +307,4 @@ class PaymentHistory extends Equatable {
 
 enum PaymentMethod { cash, check, creditCard, debitCard, bankTransfer, other, onlinePayment }
 
-enum PaymentStatus { pending, completed, failed, refunded, disputed, paid, overdue, partial, cancelled, partiallyPaid }
+enum PaymentStatusT { pending, completed, failed, refunded, disputed, paid, overdue, partial, cancelled, partiallyPaid }

@@ -7,10 +7,10 @@ import '../entities/payment.dart';
 import '../repositories/payment_repository.dart';
 import '../../data/models/payment_model.dart';
 
-class UpdatePayment implements UseCase<Payment, UpdatePaymentParams> {
+class UpdatePaymenta implements UseCase<Payment, UpdatePaymentParams> {
   final PaymentRepository repository;
 
-  UpdatePayment(this.repository);
+  UpdatePaymenta(this.repository);
 
   @override
   Future<Either<Failure, Payment>> call(UpdatePaymentParams params) async {

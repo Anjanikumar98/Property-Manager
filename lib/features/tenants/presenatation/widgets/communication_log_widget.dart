@@ -385,7 +385,7 @@ class PaymentHistoryWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildPaymentIcon(String type, PaymentStatus status) {
+  Widget _buildPaymentIcon(String type, PaymentStatusT status) {
     IconData icon;
     Color color;
 
@@ -407,34 +407,34 @@ class PaymentHistoryWidget extends StatelessWidget {
     }
 
     switch (status) {
-      case PaymentStatus.completed:
+      case PaymentStatusT.completed:
         color = Colors.green;
         break;
-      case PaymentStatus.pending:
+      case PaymentStatusT.pending:
         color = Colors.orange;
         break;
-      case PaymentStatus.failed:
+      case PaymentStatusT.failed:
         color = Colors.red;
         break;
-      case PaymentStatus.refunded:
+      case PaymentStatusT.refunded:
         color = Colors.blue;
         break;
-      case PaymentStatus.disputed:
+      case PaymentStatusT.disputed:
         color = Colors.purple;
         break;
-      case PaymentStatus.paid:
+      case PaymentStatusT.paid:
         // TODO: Handle this case.
         throw UnimplementedError();
-      case PaymentStatus.overdue:
+      case PaymentStatusT.overdue:
         // TODO: Handle this case.
         throw UnimplementedError();
-      case PaymentStatus.partial:
+      case PaymentStatusT.partial:
         // TODO: Handle this case.
         throw UnimplementedError();
-      case PaymentStatus.cancelled:
+      case PaymentStatusT.cancelled:
         // TODO: Handle this case.
         throw UnimplementedError();
-      case PaymentStatus.partiallyPaid:
+      case PaymentStatusT.partiallyPaid:
         // TODO: Handle this case.
         throw UnimplementedError();
     }
@@ -445,7 +445,7 @@ class PaymentHistoryWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusChip(PaymentStatus status) {
+  Widget _buildStatusChip(PaymentStatusT status) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
@@ -504,31 +504,31 @@ class PaymentHistoryWidget extends StatelessWidget {
     }
   }
 
-  Color _getStatusColor(PaymentStatus status) {
+  Color _getStatusColor(PaymentStatusT status) {
     switch (status) {
-      case PaymentStatus.completed:
+      case PaymentStatusT.completed:
         return Colors.green;
-      case PaymentStatus.pending:
+      case PaymentStatusT.pending:
         return Colors.orange;
-      case PaymentStatus.failed:
+      case PaymentStatusT.failed:
         return Colors.red;
-      case PaymentStatus.refunded:
+      case PaymentStatusT.refunded:
         return Colors.blue;
-      case PaymentStatus.disputed:
+      case PaymentStatusT.disputed:
         return Colors.purple;
-      case PaymentStatus.paid:
+      case PaymentStatusT.paid:
         // TODO: Handle this case.
         throw UnimplementedError();
-      case PaymentStatus.overdue:
+      case PaymentStatusT.overdue:
         // TODO: Handle this case.
         throw UnimplementedError();
-      case PaymentStatus.partial:
+      case PaymentStatusT.partial:
         // TODO: Handle this case.
         throw UnimplementedError();
-      case PaymentStatus.cancelled:
+      case PaymentStatusT.cancelled:
         // TODO: Handle this case.
         throw UnimplementedError();
-      case PaymentStatus.partiallyPaid:
+      case PaymentStatusT.partiallyPaid:
         // TODO: Handle this case.
         throw UnimplementedError();
     }
@@ -566,31 +566,31 @@ class PaymentHistoryWidget extends StatelessWidget {
     }
   }
 
-  String _getStatusDisplayName(PaymentStatus status) {
+  String _getStatusDisplayName(PaymentStatusT status) {
     switch (status) {
-      case PaymentStatus.completed:
+      case PaymentStatusT.completed:
         return 'Paid';
-      case PaymentStatus.pending:
+      case PaymentStatusT.pending:
         return 'Pending';
-      case PaymentStatus.failed:
+      case PaymentStatusT.failed:
         return 'Failed';
-      case PaymentStatus.refunded:
+      case PaymentStatusT.refunded:
         return 'Refunded';
-      case PaymentStatus.disputed:
+      case PaymentStatusT.disputed:
         return 'Disputed';
-      case PaymentStatus.paid:
+      case PaymentStatusT.paid:
         // TODO: Handle this case.
         throw UnimplementedError();
-      case PaymentStatus.overdue:
+      case PaymentStatusT.overdue:
         // TODO: Handle this case.
         throw UnimplementedError();
-      case PaymentStatus.partial:
+      case PaymentStatusT.partial:
         // TODO: Handle this case.
         throw UnimplementedError();
-      case PaymentStatus.cancelled:
+      case PaymentStatusT.cancelled:
         // TODO: Handle this case.
         throw UnimplementedError();
-      case PaymentStatus.partiallyPaid:
+      case PaymentStatusT.partiallyPaid:
         // TODO: Handle this case.
         throw UnimplementedError();
     }

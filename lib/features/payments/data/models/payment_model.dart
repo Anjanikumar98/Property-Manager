@@ -22,6 +22,13 @@ class PaymentModel extends Payment {
     super.paymentMethod,
   });
 
+  // Add computed properties for backwards compatibility
+  double get totalAmount => amount + lateFee;
+  // int? get daysOverdue {
+  //   if (!isOverdue) return null;
+  //   return DateTime.now().difference(dueDate).inDays;
+  // }
+
   factory PaymentModel.fromEntity(Payment payment) {
     return PaymentModel(
       id: payment.id,
@@ -49,14 +56,8 @@ class PaymentModel extends Payment {
       leaseId: map['leaseId'] ?? '',
       tenantId: map['tenantId'] ?? '',
       propertyId: map['propertyId'] ?? '',
-      type: PaymentType.values.firstWhere(
-        (e) => e.name == map['type'],
-        orElse: () => PaymentType.other,
-      ),
-      status: PaymentStatus.values.firstWhere(
-        (e) => e.name == map['status'],
-        orElse: () => PaymentStatus.pending,
-      ),
+      type: _parsePaymentType(map['type']),
+      status: _parsePaymentStatus(map['status']),
       amount: (map['amount'] ?? 0.0).toDouble(),
       paidAmount: (map['paidAmount'] ?? 0.0).toDouble(),
       lateFee: (map['lateFee'] ?? 0.0).toDouble(),
@@ -69,6 +70,53 @@ class PaymentModel extends Payment {
       reference: map['reference'],
       paymentMethod: map['paymentMethod'],
     );
+  }
+
+  static PaymentType _parsePaymentType(String? typeString) {
+    if (typeString == null) return PaymentType.other;
+
+    switch (typeString.toLowerCase()) {
+      case 'rent':
+        return PaymentType.rent;
+      case 'deposit':
+        return PaymentType.deposit;
+      case 'latefee':
+      case 'late_fee':
+        return PaymentType.lateFee;
+      case 'maintenance':
+        return PaymentType.maintenance;
+      case 'utility':
+      case 'utilities':
+        return PaymentType.utility;
+      case 'other':
+        return PaymentType.other;
+      default:
+        return PaymentType.other;
+    }
+  }
+
+  static PaymentStatus _parsePaymentStatus(String? statusString) {
+    if (statusString == null) return PaymentStatus.pending;
+
+    switch (statusString.toLowerCase()) {
+      case 'pending':
+        return PaymentStatus.pending;
+      case 'paid':
+        return PaymentStatus.paid;
+      case 'completed':
+        return PaymentStatus.completed;
+      case 'overdue':
+        return PaymentStatus.overdue;
+      case 'partial':
+        return PaymentStatus.partial;
+      case 'partiallypaid':
+      case 'partially_paid':
+        return PaymentStatus.partiallyPaid;
+      case 'cancelled':
+        return PaymentStatus.cancelled;
+      default:
+        return PaymentStatus.pending;
+    }
   }
 
   factory PaymentModel.fromJson(String source) {
@@ -194,12 +242,16 @@ class PaymentBusinessRules {
   }) {
     final totalDue = amount + lateFee;
 
-    if (paidAmount >= totalDue) return PaymentStatus.completed;
+    if (paidAmount >= totalDue) {
+      return PaymentStatus.completed;
+    }
+
     if (paidAmount > 0 && paidAmount < totalDue) {
       return DateTime.now().isAfter(dueDate)
           ? PaymentStatus.overdue
           : PaymentStatus.partiallyPaid;
     }
+
     return DateTime.now().isAfter(dueDate)
         ? PaymentStatus.overdue
         : PaymentStatus.pending;
@@ -212,7 +264,10 @@ class PaymentBusinessRules {
   }) {
     final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
     final typeCode = type.name.substring(0, 3).toUpperCase();
-    final propCode = propertyId.substring(0, 4).toUpperCase();
-    return '$propCode-$typeCode-$timestamp';
+    final propCode =
+        propertyId.length >= 4
+            ? propertyId.substring(0, 4).toUpperCase()
+            : propertyId.toUpperCase().padRight(4, 'X');
+    return '$propCode-$typeCode-${timestamp.substring(timestamp.length - 6)}';
   }
 }

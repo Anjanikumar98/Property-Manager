@@ -1,6 +1,8 @@
 // lib/features/payments/presentation/widgets/payment_form.dart
 import 'package:flutter/material.dart';
 import 'package:property_manager/core/utlis/validators.dart';
+import 'package:property_manager/features/tenants/domain/entities/tenant.dart'
+    show PaymentMethod;
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../../../shared/widgets/date_picker_field.dart';
 import '../../../../shared/widgets/currency_input_field.dart';
@@ -33,7 +35,7 @@ class _PaymentFormWidgetState extends State<PaymentFormWidget> {
   PaymentStatus _selectedStatus = PaymentStatus.pending;
   DateTime _dueDate = DateTime.now();
   DateTime? _paidDate;
-  String? _paymentMethod;
+  PaymentMethod? _paymentMethod;
 
   @override
   void initState() {
@@ -52,7 +54,57 @@ class _PaymentFormWidgetState extends State<PaymentFormWidget> {
     _selectedStatus = payment.status;
     _dueDate = payment.dueDate;
     _paidDate = payment.paidDate;
-    _paymentMethod = payment.paymentMethod;
+
+    // Convert string payment method to enum
+    if (payment.paymentMethod != null) {
+      _paymentMethod = _parsePaymentMethod(payment.paymentMethod!);
+    }
+  }
+
+  PaymentMethod? _parsePaymentMethod(String methodString) {
+    switch (methodString.toLowerCase()) {
+      case 'cash':
+        return PaymentMethod.cash;
+      case 'check':
+        return PaymentMethod.check;
+      case 'bank_transfer':
+      case 'banktransfer':
+        return PaymentMethod.bankTransfer;
+      case 'credit_card':
+      case 'creditcard':
+        return PaymentMethod.creditCard;
+      case 'debit_card':
+      case 'debitcard':
+        return PaymentMethod.debitCard;
+      case 'online_payment':
+      case 'onlinepayment':
+        return PaymentMethod.onlinePayment;
+      case 'other':
+        return PaymentMethod.other;
+      default:
+        return null;
+    }
+  }
+
+  String? _paymentMethodToString(PaymentMethod? method) {
+    if (method == null) return null;
+
+    switch (method) {
+      case PaymentMethod.cash:
+        return 'cash';
+      case PaymentMethod.check:
+        return 'check';
+      case PaymentMethod.bankTransfer:
+        return 'bank_transfer';
+      case PaymentMethod.creditCard:
+        return 'credit_card';
+      case PaymentMethod.debitCard:
+        return 'debit_card';
+      case PaymentMethod.onlinePayment:
+        return 'online_payment';
+      case PaymentMethod.other:
+        return 'other';
+    }
   }
 
   @override
@@ -101,10 +153,12 @@ class _PaymentFormWidgetState extends State<PaymentFormWidget> {
                   label: 'Due Date',
                   selectedDate: _dueDate,
                   onDateSelected: (date) {
-                    setState(() {
-                      _dueDate = date!;
-                      _notifyChange();
-                    });
+                    if (date != null) {
+                      setState(() {
+                        _dueDate = date;
+                        _notifyChange();
+                      });
+                    }
                   },
                 ),
               ),
@@ -119,28 +173,11 @@ class _PaymentFormWidgetState extends State<PaymentFormWidget> {
                       _notifyChange();
                     });
                   },
-                  //  clearable: true,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-
-          CustomTextField(
-            controller: _referenceController,
-            labelText: 'Reference',
-            validator: Validators.validateRequired,
-            onChanged: (_) => _notifyChange(),
-          ),
-          const SizedBox(height: 16),
-
-          if (widget.showAdvancedOptions) ...[
-            _buildPaymentMethodDropdown(),
-            const SizedBox(height: 16),
-
-            _buildStatusDropdown(),
-            const SizedBox(height: 16),
-          ],
 
           CustomTextField(
             controller: _descriptionController,
@@ -161,12 +198,14 @@ class _PaymentFormWidgetState extends State<PaymentFormWidget> {
         border: OutlineInputBorder(),
       ),
       items:
-          PaymentType.values.map((type) {
-            return DropdownMenuItem(
-              value: type,
-              child: Text(_getTypeDisplayName(type)),
-            );
-          }).toList(),
+          PaymentType.values.where((type) => type != PaymentType.utilities).map(
+            (type) {
+              return DropdownMenuItem(
+                value: type,
+                child: Text(_getTypeDisplayName(type)),
+              );
+            },
+          ).toList(),
       onChanged: (value) {
         if (value != null) {
           setState(() {
@@ -180,23 +219,23 @@ class _PaymentFormWidgetState extends State<PaymentFormWidget> {
   }
 
   Widget _buildPaymentMethodDropdown() {
-    return DropdownButtonFormField<String>(
+    return DropdownButtonFormField<PaymentMethod>(
       value: _paymentMethod,
       decoration: const InputDecoration(
         labelText: 'Payment Method',
         border: OutlineInputBorder(),
       ),
-      items: const [
-        DropdownMenuItem(value: null, child: Text('Select Method')),
-        DropdownMenuItem(value: 'cash', child: Text('Cash')),
-        DropdownMenuItem(value: 'check', child: Text('Check')),
-        DropdownMenuItem(value: 'bank_transfer', child: Text('Bank Transfer')),
-        DropdownMenuItem(value: 'credit_card', child: Text('Credit Card')),
-        DropdownMenuItem(
-          value: 'mobile_payment',
-          child: Text('Mobile Payment'),
+      items: [
+        const DropdownMenuItem<PaymentMethod>(
+          value: null,
+          child: Text('Select Method'),
         ),
-        DropdownMenuItem(value: 'other', child: Text('Other')),
+        ...PaymentMethod.values.map((method) {
+          return DropdownMenuItem<PaymentMethod>(
+            value: method,
+            child: Text(_getMethodDisplayName(method)),
+          );
+        }),
       ],
       onChanged: (value) {
         setState(() {
@@ -238,6 +277,7 @@ class _PaymentFormWidgetState extends State<PaymentFormWidget> {
         return 'Rent';
       case PaymentType.deposit:
         return 'Security Deposit';
+      case PaymentType.utility:
       case PaymentType.utilities:
         return 'Utilities';
       case PaymentType.maintenance:
@@ -246,9 +286,6 @@ class _PaymentFormWidgetState extends State<PaymentFormWidget> {
         return 'Late Fee';
       case PaymentType.other:
         return 'Other';
-      case PaymentType.utility:
-        // TODO: Handle this case.
-        throw UnimplementedError();
     }
   }
 
@@ -265,11 +302,28 @@ class _PaymentFormWidgetState extends State<PaymentFormWidget> {
       case PaymentStatus.cancelled:
         return 'Cancelled';
       case PaymentStatus.paid:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        return 'Paid';
       case PaymentStatus.partial:
-        // TODO: Handle this case.
-        throw UnimplementedError();
+        return 'Partial';
+    }
+  }
+
+  String _getMethodDisplayName(PaymentMethod method) {
+    switch (method) {
+      case PaymentMethod.cash:
+        return 'Cash';
+      case PaymentMethod.check:
+        return 'Check';
+      case PaymentMethod.bankTransfer:
+        return 'Bank Transfer';
+      case PaymentMethod.creditCard:
+        return 'Credit Card';
+      case PaymentMethod.debitCard:
+        return 'Debit Card';
+      case PaymentMethod.onlinePayment:
+        return 'Online Payment';
+      case PaymentMethod.other:
+        return 'Other';
     }
   }
 
@@ -304,7 +358,7 @@ class _PaymentFormWidgetState extends State<PaymentFormWidget> {
               ? null
               : _descriptionController.text.trim(),
       reference: _referenceController.text.trim(),
-      paymentMethod: _paymentMethod,
+      paymentMethod: _paymentMethodToString(_paymentMethod),
     );
 
     widget.onPaymentChanged(payment);
@@ -323,5 +377,3 @@ class _PaymentFormWidgetState extends State<PaymentFormWidget> {
     super.dispose();
   }
 }
-
-

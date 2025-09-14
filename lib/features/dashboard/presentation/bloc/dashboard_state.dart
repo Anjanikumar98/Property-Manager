@@ -82,3 +82,4 @@ class PaymentStatus {
   });
 }
 
+enum PaymentStatusType { pending, paid, overdue }
