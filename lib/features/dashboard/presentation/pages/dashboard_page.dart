@@ -122,7 +122,7 @@ class _DashboardContent extends StatelessWidget {
                     flex: 2,
                     child: Column(
                       children: [
-                        RecentActivities(activities: data.recentActivities),
+                        //   RecentActivities(activities: data.recentActivities),
                         const SizedBox(height: 16),
                         // OccupancyOverview(
                         //   totalProperties: data.totalProperties,
@@ -144,7 +144,7 @@ class _DashboardContent extends StatelessWidget {
             else
               Column(
                 children: [
-                  RecentActivities(activities: data.recentActivities),
+                  //    RecentActivities(activities: data.recentActivities),
                   const SizedBox(height: 16),
                   //     PaymentStatusChart(paymentOverview: data.paymentOverview),
                   const SizedBox(height: 16),
