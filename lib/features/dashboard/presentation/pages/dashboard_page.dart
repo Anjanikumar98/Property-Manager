@@ -1,7 +1,8 @@
 // lib/features/dashboard/presentation/pages/dashboard_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:property_manager/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:property_manager/features/dashboard/data/models/dashboard_data_model.dart';
+import '../bloc/dashboard_bloc.dart';
 import '../bloc/dashboard_event.dart';
 import '../bloc/dashboard_state.dart';
 import '../widgets/summary_cards.dart';
@@ -20,10 +21,18 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     context.read<DashboardBloc>().add(LoadDashboardData());
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -32,19 +41,37 @@ class _DashboardPageState extends State<DashboardPage> {
       backgroundColor: Colors.grey[50],
       appBar: CustomAppBar(
         title: 'Dashboard',
-        //  showBackButton: false,
         actions: [
           IconButton(
             onPressed: () => _navigateToNotifications(context),
             icon: const Icon(Icons.notifications_outlined),
+            tooltip: 'Notifications',
           ),
           IconButton(
             onPressed: () => _showProfileMenu(context),
             icon: const Icon(Icons.account_circle_outlined),
+            tooltip: 'Profile',
           ),
         ],
       ),
-      body: BlocBuilder<DashboardBloc, DashboardState>(
+      body: BlocConsumer<DashboardBloc, DashboardState>(
+        listener: (context, state) {
+          if (state is DashboardError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error: ${state.message}'),
+                backgroundColor: Colors.red,
+                action: SnackBarAction(
+                  label: 'Retry',
+                  onPressed:
+                      () => context.read<DashboardBloc>().add(
+                        LoadDashboardData(),
+                      ),
+                ),
+              ),
+            );
+          }
+        },
         builder: (context, state) {
           if (state is DashboardLoading) {
             return const LoadingWidget();
@@ -56,8 +83,26 @@ class _DashboardPageState extends State<DashboardPage> {
             );
           } else if (state is DashboardLoaded) {
             return _DashboardContent(data: state.data);
+          } else if (state is DashboardRefreshing) {
+            // Show current data while refreshing
+            if (state.currentData != null) {
+              return Stack(
+                children: [
+                  _DashboardContent(data: state.currentData!),
+                  const Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: LinearProgressIndicator(),
+                  ),
+                ],
+              );
+            } else {
+              return const LoadingWidget();
+            }
           }
-          return const SizedBox();
+
+          return const Center(child: Text('Welcome to PropertyMaster'));
         },
       ),
       floatingActionButton: _QuickActionButton(),
@@ -65,10 +110,11 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _navigateToNotifications(BuildContext context) {
-    // Navigate to notifications page
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Notifications feature coming soon!')),
-    );
+    Navigator.pushNamed(context, '/notifications').catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Notifications feature coming soon!')),
+      );
+    });
   }
 
   void _showProfileMenu(BuildContext context) {
@@ -92,8 +138,8 @@ class _DashboardContent extends StatelessWidget {
     return RefreshIndicator(
       onRefresh: () async {
         context.read<DashboardBloc>().add(RefreshDashboardData());
-        // Wait for the refresh to complete
-        await Future.delayed(const Duration(seconds: 1));
+        // Wait a bit for the refresh to register
+        await Future.delayed(const Duration(milliseconds: 500));
       },
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -113,55 +159,192 @@ class _DashboardContent extends StatelessWidget {
             _QuickNavigationSection(),
             const SizedBox(height: 24),
 
-            // Main Content Row
-            if (MediaQuery.of(context).size.width > 600)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Column(
-                      children: [
-                        //   RecentActivities(activities: data.recentActivities),
-                        const SizedBox(height: 16),
-                        // OccupancyOverview(
-                        //   totalProperties: data.totalProperties,
-                        //   activeLeases: data.activeLeases,
-                        //   vacantProperties: data.vacantProperties,
-                        //   occupancyRate: data.occupancyRate, occupancyData: null,
-                        // ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // Expanded(
-                  //   child: PaymentStatusChart(
-                  //     paymentOverview: data.paymentOverview,
-                  //   ),
-                  // ),
-                ],
-              )
-            else
-              Column(
-                children: [
-                  //    RecentActivities(activities: data.recentActivities),
-                  const SizedBox(height: 16),
-                  //     PaymentStatusChart(paymentOverview: data.paymentOverview),
-                  const SizedBox(height: 16),
-                  // OccupancyOverview(
-                  //   totalProperties: data.totalProperties,
-                  //   activeLeases: data.activeLeases,
-                  //   vacantProperties: data.vacantProperties,
-                  //   occupancyRate: data.occupancyRate,
-                  // ),
-                ],
-              ),
+            // Main Content Layout
+            _buildMainContent(context),
 
             const SizedBox(height: 80), // Space for FAB
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildMainContent(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 900;
+    final isDesktop = screenWidth > 1200;
+
+    if (isDesktop) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Column(
+              children: [
+                RecentActivities(activities: data.recentActivities),
+                const SizedBox(height: 16),
+                OccupancyOverview(occupancyData: data.occupancyData),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              children: [
+                PaymentStatusChart(paymentData: data.paymentStatusData),
+                const SizedBox(height: 16),
+                _FinancialChart(data: data.financialData),
+              ],
+            ),
+          ),
+        ],
+      );
+    } else if (isTablet) {
+      return Column(
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: RecentActivities(activities: data.recentActivities),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: PaymentStatusChart(paymentData: data.paymentStatusData),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: OccupancyOverview(occupancyData: data.occupancyData),
+              ),
+              const SizedBox(width: 16),
+              Expanded(child: _FinancialChart(data: data.financialData)),
+            ],
+          ),
+        ],
+      );
+    } else {
+      return Column(
+        children: [
+          RecentActivities(activities: data.recentActivities),
+          const SizedBox(height: 16),
+          PaymentStatusChart(paymentData: data.paymentStatusData),
+          const SizedBox(height: 16),
+          OccupancyOverview(occupancyData: data.occupancyData),
+          const SizedBox(height: 16),
+          _FinancialChart(data: data.financialData),
+        ],
+      );
+    }
+  }
+}
+
+class _FinancialChart extends StatelessWidget {
+  final List<FinancialDataPoint> data;
+
+  const _FinancialChart({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.bar_chart,
+                color: Theme.of(context).primaryColor,
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Financial Overview',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          if (data.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(40),
+                child: Text('No financial data available'),
+              ),
+            )
+          else
+            SizedBox(
+              height: 200,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: data.length,
+                itemBuilder: (context, index) {
+                  final point = data[index];
+                  return Container(
+                    width: 80,
+                    margin: const EdgeInsets.only(right: 16),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          '₹${_formatAmount(point.netIncome)}',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Expanded(
+                          child: Container(
+                            width: 40,
+                            decoration: BoxDecoration(
+                              color:
+                                  point.netIncome >= 0
+                                      ? Colors.green.withOpacity(0.8)
+                                      : Colors.red.withOpacity(0.8),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(point.month, style: const TextStyle(fontSize: 10)),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  String _formatAmount(double amount) {
+    if (amount >= 100000) {
+      return '${(amount / 100000).toStringAsFixed(1)}L';
+    } else if (amount >= 1000) {
+      return '${(amount / 1000).toStringAsFixed(1)}K';
+    }
+    return amount.toStringAsFixed(0);
   }
 }
 
@@ -244,34 +427,46 @@ class _QuickNavigationSection extends StatelessWidget {
                 title: 'Add Property',
                 icon: Icons.add_home,
                 color: Colors.blue,
-                onTap: () => Navigator.pushNamed(context, '/add-property'),
+                onTap: () => _navigateWithFallback(context, '/add-property'),
               ),
               const SizedBox(width: 12),
               _QuickActionCard(
                 title: 'Record Payment',
                 icon: Icons.payment,
                 color: Colors.green,
-                onTap: () => Navigator.pushNamed(context, '/record-payment'),
+                onTap: () => _navigateWithFallback(context, '/record-payment'),
               ),
               const SizedBox(width: 12),
               _QuickActionCard(
                 title: 'Create Lease',
                 icon: Icons.assignment_add,
                 color: Colors.orange,
-                onTap: () => Navigator.pushNamed(context, '/create-lease'),
+                onTap: () => _navigateWithFallback(context, '/create-lease'),
               ),
               const SizedBox(width: 12),
               _QuickActionCard(
                 title: 'Add Tenant',
                 icon: Icons.person_add,
                 color: Colors.purple,
-                onTap: () => Navigator.pushNamed(context, '/add-tenant'),
+                onTap: () => _navigateWithFallback(context, '/add-tenant'),
               ),
             ],
           ),
         ),
       ],
     );
+  }
+
+  void _navigateWithFallback(BuildContext context, String route) {
+    Navigator.pushNamed(context, route).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${route.replaceFirst('/', '').replaceAll('-', ' ')} feature coming soon!',
+          ),
+        ),
+      );
+    });
   }
 }
 
@@ -399,7 +594,16 @@ class _QuickActionMenuSheet extends StatelessWidget {
               title: Text(action['title'] as String),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushNamed(context, action['route'] as String);
+                Navigator.pushNamed(
+                  context,
+                  action['route'] as String,
+                ).catchError((error) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${action['title']} feature coming soon!'),
+                    ),
+                  );
+                });
               },
               contentPadding: EdgeInsets.zero,
             ),
@@ -428,19 +632,13 @@ class _ProfileMenuSheet extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.person),
             title: const Text('Profile Settings'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, '/profile');
-            },
+            onTap: () => _navigateWithFallback(context, '/profile'),
             contentPadding: EdgeInsets.zero,
           ),
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('App Settings'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, '/settings');
-            },
+            onTap: () => _navigateWithFallback(context, '/settings'),
             contentPadding: EdgeInsets.zero,
           ),
           ListTile(
@@ -457,10 +655,7 @@ class _ProfileMenuSheet extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.help),
             title: const Text('Help & Support'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, '/help');
-            },
+            onTap: () => _navigateWithFallback(context, '/help'),
             contentPadding: EdgeInsets.zero,
           ),
           const Divider(),
@@ -476,8 +671,21 @@ class _ProfileMenuSheet extends StatelessWidget {
     );
   }
 
+  void _navigateWithFallback(BuildContext context, String route) {
+    Navigator.pop(context);
+    Navigator.pushNamed(context, route).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${route.replaceFirst('/', '').replaceAll('-', ' ')} feature coming soon!',
+          ),
+        ),
+      );
+    });
+  }
+
   void _showLogoutDialog(BuildContext context) {
-    Navigator.pop(context); // Close the sheet first
+    Navigator.pop(context);
     showDialog(
       context: context,
       builder:
@@ -492,7 +700,6 @@ class _ProfileMenuSheet extends StatelessWidget {
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  // Add logout logic here
                   Navigator.pushNamedAndRemoveUntil(
                     context,
                     '/login',

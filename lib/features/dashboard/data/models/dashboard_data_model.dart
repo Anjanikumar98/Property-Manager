@@ -1,22 +1,43 @@
-// Dashboard Data Models
+// lib/features/dashboard/domain/models/dashboard_data_model.dart
+import 'package:equatable/equatable.dart';
+import 'package:property_manager/features/dashboard/presentation/widgets/occupancy_overview.dart';
+import 'package:property_manager/features/dashboard/presentation/widgets/payment_status_chart.dart';
+import 'package:property_manager/features/dashboard/presentation/widgets/recent_activities.dart';
 
-class DashboardData {
+class DashboardData extends Equatable {
   final SummaryData summaryData;
   final List<FinancialDataPoint> financialData;
   final PaymentStatusData paymentStatusData;
   final OccupancyData occupancyData;
   final List<RecentActivity> recentActivities;
 
-  DashboardData({
+  const DashboardData({
     required this.summaryData,
     required this.financialData,
     required this.paymentStatusData,
     required this.occupancyData,
     required this.recentActivities,
   });
+
+  factory DashboardData.empty() => DashboardData(
+    summaryData: SummaryData.empty(),
+    financialData: const [],
+    paymentStatusData: PaymentStatusData.empty(),
+    occupancyData: OccupancyData.empty(),
+    recentActivities: const [],
+  );
+
+  @override
+  List<Object> get props => [
+    summaryData,
+    financialData,
+    paymentStatusData,
+    occupancyData,
+    recentActivities,
+  ];
 }
 
-class SummaryData {
+class SummaryData extends Equatable {
   final int totalProperties;
   final int totalTenants;
   final int activeLeases;
@@ -26,7 +47,7 @@ class SummaryData {
   final double occupancyRate;
   final int maintenanceRequests;
 
-  SummaryData({
+  const SummaryData({
     required this.totalProperties,
     required this.totalTenants,
     required this.activeLeases,
@@ -37,7 +58,7 @@ class SummaryData {
     required this.maintenanceRequests,
   });
 
-  factory SummaryData.empty() => SummaryData(
+  factory SummaryData.empty() => const SummaryData(
     totalProperties: 0,
     totalTenants: 0,
     activeLeases: 0,
@@ -47,15 +68,30 @@ class SummaryData {
     occupancyRate: 0.0,
     maintenanceRequests: 0,
   );
+
+  // Helper getter for dashboard display
+  int get vacantProperties => totalProperties - activeLeases;
+
+  @override
+  List<Object> get props => [
+    totalProperties,
+    totalTenants,
+    activeLeases,
+    monthlyRevenue,
+    totalRevenue,
+    outstandingPayments,
+    occupancyRate,
+    maintenanceRequests,
+  ];
 }
 
-class FinancialDataPoint {
+class FinancialDataPoint extends Equatable {
   final String month;
   final double income;
   final double expenses;
   final double netIncome;
 
-  FinancialDataPoint({
+  const FinancialDataPoint({
     required this.month,
     required this.income,
     required this.expenses,
@@ -64,136 +100,43 @@ class FinancialDataPoint {
 
   factory FinancialDataPoint.fromJson(Map<String, dynamic> json) {
     return FinancialDataPoint(
-      month: json['month'],
-      income: json['income']?.toDouble() ?? 0.0,
-      expenses: json['expenses']?.toDouble() ?? 0.0,
-      netIncome: json['netIncome']?.toDouble() ?? 0.0,
+      month: json['month'] ?? '',
+      income: (json['income'] ?? 0.0).toDouble(),
+      expenses: (json['expenses'] ?? 0.0).toDouble(),
+      netIncome: (json['netIncome'] ?? 0.0).toDouble(),
     );
   }
-}
 
-class PaymentStatusData {
-  final int onTimePayments;
-  final int latePayments;
-  final int pendingPayments;
-  final int overduePayments;
-
-  PaymentStatusData({
-    required this.onTimePayments,
-    required this.latePayments,
-    required this.pendingPayments,
-    required this.overduePayments,
-  });
-
-  factory PaymentStatusData.empty() => PaymentStatusData(
-    onTimePayments: 0,
-    latePayments: 0,
-    pendingPayments: 0,
-    overduePayments: 0,
-  );
-
-  int get totalPayments =>
-      onTimePayments + latePayments + pendingPayments + overduePayments;
-}
-
-class OccupancyData {
-  final int occupiedUnits;
-  final int vacantUnits;
-  final int maintenanceUnits;
-  final List<PropertyOccupancy> propertyBreakdown;
-
-  OccupancyData({
-    required this.occupiedUnits,
-    required this.vacantUnits,
-    required this.maintenanceUnits,
-    required this.propertyBreakdown,
-  });
-
-  factory OccupancyData.empty() => OccupancyData(
-    occupiedUnits: 0,
-    vacantUnits: 0,
-    maintenanceUnits: 0,
-    propertyBreakdown: [],
-  );
-
-  int get totalUnits => occupiedUnits + vacantUnits + maintenanceUnits;
-
-  double get occupancyRate =>
-      totalUnits > 0 ? (occupiedUnits / totalUnits) * 100 : 0.0;
-}
-
-class PropertyOccupancy {
-  final String propertyId;
-  final String propertyName;
-  final int totalUnits;
-  final int occupiedUnits;
-  final double revenue;
-
-  PropertyOccupancy({
-    required this.propertyId,
-    required this.propertyName,
-    required this.totalUnits,
-    required this.occupiedUnits,
-    required this.revenue,
-  });
-
-  double get occupancyRate =>
-      totalUnits > 0 ? (occupiedUnits / totalUnits) * 100 : 0.0;
-}
-
-class RecentActivity {
-  final String id;
-  final String type;
-  final String title;
-  final String description;
-  final DateTime timestamp;
-  final String? propertyName;
-  final String? tenantName;
-  final double? amount;
-  final ActivityStatus status;
-
-  RecentActivity({
-    required this.id,
-    required this.type,
-    required this.title,
-    required this.description,
-    required this.timestamp,
-    this.propertyName,
-    this.tenantName,
-    this.amount,
-    required this.status,
-  });
-
-  factory RecentActivity.fromJson(Map<String, dynamic> json) {
-    return RecentActivity(
-      id: json['id'],
-      type: json['type'],
-      title: json['title'],
-      description: json['description'],
-      timestamp: DateTime.parse(json['timestamp']),
-      propertyName: json['propertyName'],
-      tenantName: json['tenantName'],
-      amount: json['amount']?.toDouble(),
-      status: ActivityStatus.values.firstWhere(
-        (e) => e.name == json['status'],
-        orElse: () => ActivityStatus.info,
-      ),
-    );
+  Map<String, dynamic> toJson() {
+    return {
+      'month': month,
+      'income': income,
+      'expenses': expenses,
+      'netIncome': netIncome,
+    };
   }
-}
 
-enum ActivityStatus { success, warning, error, info }
+  @override
+  List<Object> get props => [month, income, expenses, netIncome];
+}
 
 // Chart Data Models
-class ChartDataPoint {
+class ChartDataPoint extends Equatable {
   final String label;
   final double value;
   final String? category;
 
-  ChartDataPoint({required this.label, required this.value, this.category});
+  const ChartDataPoint({
+    required this.label,
+    required this.value,
+    this.category,
+  });
+
+  @override
+  List<Object?> get props => [label, value, category];
 }
 
-class MonthlyFinancialSummary {
+class MonthlyFinancialSummary extends Equatable {
   final String period;
   final double totalIncome;
   final double totalExpenses;
@@ -202,7 +145,7 @@ class MonthlyFinancialSummary {
   final int newTenants;
   final int leasesExpired;
 
-  MonthlyFinancialSummary({
+  const MonthlyFinancialSummary({
     required this.period,
     required this.totalIncome,
     required this.totalExpenses,
@@ -214,4 +157,15 @@ class MonthlyFinancialSummary {
 
   double get profitMargin =>
       totalIncome > 0 ? (netIncome / totalIncome) * 100 : 0.0;
+
+  @override
+  List<Object> get props => [
+    period,
+    totalIncome,
+    totalExpenses,
+    netIncome,
+    occupancyRate,
+    newTenants,
+    leasesExpired,
+  ];
 }

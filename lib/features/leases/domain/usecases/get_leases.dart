@@ -9,24 +9,26 @@ class GetLeases {
 
   GetLeases(this.repository);
 
-  Future<Either<Failure, List<Lease>>> call(GetLeasesParams params) async {
+  Future<Either<Failure, List<Lease>>> call(GetLeasesParams params) {
     switch (params.filterType) {
       case LeaseFilterType.all:
-        return await repository.getLeases();
+        return repository.getLeases();
       case LeaseFilterType.active:
-        return await repository.getActiveLeases();
+        return repository.getActiveLeases();
       case LeaseFilterType.expiring:
-        return await repository.getExpiringLeases();
+        return repository.getExpiringLeases();
       case LeaseFilterType.byProperty:
         if (params.propertyId == null) {
-          return Left(ValidationFailure('Property ID is required'));
+          return Future.value(
+            Left(ValidationFailure('Property ID is required')),
+          );
         }
-        return await repository.getLeasesByProperty(params.propertyId!);
+        return repository.getLeasesByProperty(params.propertyId!);
       case LeaseFilterType.byTenant:
         if (params.tenantId == null) {
-          return Left(ValidationFailure('Tenant ID is required'));
+          return Future.value(Left(ValidationFailure('Tenant ID is required')));
         }
-        return await repository.getLeasesByTenant(params.tenantId!);
+        return repository.getLeasesByTenant(params.tenantId!);
     }
   }
 }

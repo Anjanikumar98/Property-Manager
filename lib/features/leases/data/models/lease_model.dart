@@ -162,7 +162,7 @@ class LeaseModel extends Lease {
       'noticePeriodDays': noticePeriodDays,
       'specialTerms': specialTerms,
       'notes': notes,
-      'attachments': attachments?.join(','), // Store as comma-separated string
+      'attachments': attachments.join(','), // Store as comma-separated string
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -197,6 +197,7 @@ class LeaseModel extends Lease {
   }
 
   // Added copyWith method for updating lease data
+  @override
   LeaseModel copyWith({
     String? id,
     String? propertyId,

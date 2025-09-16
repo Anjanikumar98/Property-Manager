@@ -1,5 +1,6 @@
 // lib/features/dashboard/presentation/bloc/dashboard_state.dart
 import 'package:equatable/equatable.dart';
+import 'package:property_manager/features/dashboard/data/models/dashboard_data_model.dart';
 
 abstract class DashboardState extends Equatable {
   const DashboardState();
@@ -30,56 +31,11 @@ class DashboardError extends DashboardState {
   List<Object?> get props => [message];
 }
 
-class DashboardData {
-  final int totalProperties;
-  final int activeLeases;
-  final int vacantProperties;
-  final double monthlyRevenue;
-  final double totalRevenue;
-  final double occupancyRate;
-  final List<RecentActivity> recentActivities;
-  final List<PaymentStatus> paymentOverview;
+class DashboardRefreshing extends DashboardState {
+  final DashboardData? currentData;
 
-  DashboardData({
-    required this.totalProperties,
-    required this.activeLeases,
-    required this.vacantProperties,
-    required this.monthlyRevenue,
-    required this.totalRevenue,
-    required this.occupancyRate,
-    required this.recentActivities,
-    required this.paymentOverview,
-  });
+  const DashboardRefreshing({this.currentData});
+
+  @override
+  List<Object?> get props => [currentData];
 }
-
-class RecentActivity {
-  final String id;
-  final String title;
-  final String description;
-  final DateTime timestamp;
-  final ActivityType type;
-
-  RecentActivity({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.timestamp,
-    required this.type,
-  });
-}
-
-enum ActivityType { payment, lease, property, tenant }
-
-class PaymentStatus {
-  final String status;
-  final int count;
-  final double amount;
-
-  PaymentStatus({
-    required this.status,
-    required this.count,
-    required this.amount,
-  });
-}
-
-enum PaymentStatusType { pending, paid, overdue }
