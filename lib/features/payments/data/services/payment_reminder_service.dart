@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:property_manager/features/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:property_manager/features/payments/data/models/payment_model.dart';
+import 'package:property_manager/features/payments/domain/entities/payment.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/services/database_service.dart';
 
@@ -12,10 +13,7 @@ class PaymentReminderService {
   final DatabaseService _databaseService;
   Timer? _reminderTimer;
 
-  PaymentReminderService(
-      this._notificationService,
-      this._databaseService,
-      );
+  PaymentReminderService(this._notificationService, this._databaseService);
 
   Future<void> initialize() async {
     await _scheduleRecurringCheck();
@@ -81,7 +79,7 @@ class PaymentReminderService {
   Future<void> _scheduleRecurringCheck() async {
     _reminderTimer = Timer.periodic(
       const Duration(hours: 1),
-          (_) => _checkAndSendReminders(),
+      (_) => _checkAndSendReminders(),
     );
   }
 
@@ -99,20 +97,23 @@ class PaymentReminderService {
   // Send reminder notification
   Future<void> _sendReminder(PaymentReminderModel reminder) async {
     final payment = await _getPayment(reminder.paymentId);
- //   if (payment == null || payment.status == PaymentStatus.paid) return;
 
-    final title = _getReminderTitle(reminder.type, payment!);
-    final body = reminder.message ?? _getDefaultReminderMessage(reminder.type, payment);
+    // Avoid sending if invalid or already paid
+    if (payment == null || payment.status == PaymentStatus.paid) return;
+
+    final title = _getReminderTitle(reminder.type, payment);
+    final body =
+        reminder.message ?? _getDefaultReminderMessage(reminder.type, payment);
 
     await _notificationService.showNotification(
-      id: reminder.id.hashCode,
-      title: title,
-      body: body,
-      payload: jsonEncode({
-        'type': 'payment_reminder',
-        'paymentId': payment.id,
-        'reminderId': reminder.id,
-      }),
+      NotificationPayload(
+        id: reminder.id,
+        title: title,
+        body: body,
+        type: NotificationType.paymentReminder,
+        data: {'paymentId': payment.id, 'reminderId': reminder.id},
+        scheduledFor: DateTime.now(),
+      ),
     );
 
     // Schedule repeat reminders for overdue payments
@@ -127,18 +128,18 @@ class PaymentReminderService {
     if (payment == null) return;
 
     final title = _getReminderTitle(reminder.type, payment);
-    final body = reminder.message ?? _getDefaultReminderMessage(reminder.type, payment);
+    final body =
+        reminder.message ?? _getDefaultReminderMessage(reminder.type, payment);
 
     await _notificationService.scheduleNotification(
-      id: reminder.id.hashCode,
-      title: title,
-      body: body,
-      scheduledDate: reminder.reminderDate,
-      payload: jsonEncode({
-        'type': 'payment_reminder',
-        'paymentId': payment.id,
-        'reminderId': reminder.id,
-      }),
+      NotificationPayload(
+        id: reminder.id,
+        title: title,
+        body: body,
+        type: NotificationType.paymentReminder,
+        data: {'paymentId': payment.id, 'reminderId': reminder.id},
+        scheduledFor: reminder.reminderDate, // use scheduled time
+      ),
     );
   }
 
@@ -187,7 +188,10 @@ class PaymentReminderService {
   }
 
   // Get default reminder message
-  String _getDefaultReminderMessage(PaymentReminderType type, PaymentModel payment) {
+  String _getDefaultReminderMessage(
+    PaymentReminderType type,
+    PaymentModel payment,
+  ) {
     final amount = '\${payment.totalAmount.toStringAsFixed(2)}';
 
     switch (type) {
@@ -214,7 +218,8 @@ class PaymentReminderService {
         paymentId: payment.id,
         reminderDate: followUpDate,
         type: PaymentReminderType.overdue,
-        customMessage: 'Payment of \${payment.totalAmount.toStringAsFixed(2)} is now $days days overdue. Please pay immediately to avoid additional fees.',
+        customMessage:
+            'Payment of \${payment.totalAmount.toStringAsFixed(2)} is now $days days overdue. Please pay immediately to avoid additional fees.',
       );
     }
   }
@@ -239,7 +244,9 @@ class PaymentReminderService {
     );
 
     // Cancel scheduled notification
-    await _notificationService.cancelNotification(reminderId.hashCode);
+    await _notificationService.cancelNotification(
+      reminderId.hashCode as String,
+    );
   }
 
   // Update reminder settings
@@ -309,7 +316,9 @@ class PaymentReminderModel {
       id: json['id'],
       paymentId: json['paymentId'],
       reminderDate: DateTime.parse(json['reminderDate']),
-      type: PaymentReminderType.values.firstWhere((e) => e.name == json['type']),
+      type: PaymentReminderType.values.firstWhere(
+        (e) => e.name == json['type'],
+      ),
       message: json['message'],
       isActive: json['isActive'] == 1,
       isSent: json['isSent'] == 1,
@@ -349,7 +358,9 @@ class ReminderSetting {
 
   factory ReminderSetting.fromJson(Map<String, dynamic> json) {
     return ReminderSetting(
-      type: PaymentReminderType.values.firstWhere((e) => e.name == json['type']),
+      type: PaymentReminderType.values.firstWhere(
+        (e) => e.name == json['type'],
+      ),
       daysBefore: json['daysBefore'],
       isEnabled: json['isEnabled'] == 1,
       defaultMessage: json['defaultMessage'],
@@ -366,8 +377,5 @@ class ReminderSetting {
   }
 }
 
-enum PaymentReminderType {
-  upcoming,
-  dueToday,
-  overdue,
-}
+
+enum PaymentReminderType { upcoming, dueToday, overdue }

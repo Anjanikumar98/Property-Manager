@@ -1,255 +1,263 @@
-import 'dart:io';
-import 'package:flutter/material.dart';
-import '../constants/app_constants.dart';
-import '../errors/exceptions.dart';
+// lib/core/services/notification_service.dart
+import 'dart:ui';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:permission_handler/permission_handler.dart';
+
+enum NotificationType {
+  paymentReminder,
+  leaseExpiry,
+  maintenanceRequest,
+  propertyUpdate,
+  systemAlert,
+}
+
+class NotificationPayload {
+  final String id; // Use String for flexibility
+  final NotificationType type;
+  final String title;
+  final String body;
+  final Map<String, dynamic>? data;
+  final DateTime scheduledFor;
+
+  NotificationPayload({
+    required this.id,
+    required this.type,
+    required this.title,
+    required this.body,
+    this.data,
+    required this.scheduledFor,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'type': type.name,
+    'title': title,
+    'body': body,
+    'data': data,
+    'scheduledFor': scheduledFor.toIso8601String(),
+  };
+
+  factory NotificationPayload.fromJson(
+    Map<String, dynamic> json,
+  ) => NotificationPayload(
+    id: json['id'],
+    type: NotificationType.values.firstWhere(
+      (e) => e.name == json['type'],
+      orElse: () => NotificationType.systemAlert, // fallback
+    ),
+    title: json['title'],
+    body: json['body'],
+    data: json['data'] != null ? Map<String, dynamic>.from(json['data']) : null,
+    scheduledFor: DateTime.parse(json['scheduledFor']),
+  );
+}
 
 class NotificationService {
-  static final FlutterLocalNotificationsPlugin _notifications =
+  static final NotificationService _instance = NotificationService._internal();
+  factory NotificationService() => _instance;
+  NotificationService._internal();
+
+  final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
-  static bool _initialized = false;
+
+  bool _initialized = false;
 
   Future<void> initialize() async {
     if (_initialized) return;
 
-    try {
-      const AndroidInitializationSettings androidSettings =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
-      const DarwinInitializationSettings iosSettings =
-          DarwinInitializationSettings(
-            requestSoundPermission: true,
-            requestBadgePermission: true,
-            requestAlertPermission: true,
-          );
+    // Initialize timezone
+    tz.initializeTimeZones();
 
-      const InitializationSettings settings = InitializationSettings(
-        android: androidSettings,
-        iOS: iosSettings,
-      );
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
+    const iosSettings = DarwinInitializationSettings(
+      requestSoundPermission: true,
+      requestBadgePermission: true,
+      requestAlertPermission: true,
+    );
 
-      await _notifications.initialize(
-        settings,
-        onDidReceiveNotificationResponse: _onNotificationTapped,
-      );
+    const initSettings = InitializationSettings(
+      android: androidSettings,
+      iOS: iosSettings,
+    );
 
-      _initialized = true;
-    } catch (e) {
-      throw PermissionException('Failed to initialize notifications: $e');
+    await _notifications.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: _onNotificationTapped,
+    );
+
+    await _requestPermissions();
+    _initialized = true;
+  }
+
+  Future<void> _requestPermissions() async {
+    final status = await Permission.notification.request();
+    if (status != PermissionStatus.granted) {
+      throw Exception('Notification permission denied');
     }
   }
 
-  static void _onNotificationTapped(NotificationResponse response) {
+  void _onNotificationTapped(NotificationResponse response) {
     // Handle notification tap
-    debugPrint('Notification tapped: ${response.payload}');
-  }
-
-  Future<bool> requestPermissions() async {
-    try {
-      if (Platform.isAndroid) {
-        // For Android 13+
-        final status = await Permission.notification.request();
-        return status.isGranted;
-      } else if (Platform.isIOS || Platform.isMacOS) {
-        // iOS and macOS have requestPermissions on their plugin
-        final bool? granted = await _notifications
-            .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin
-            >()
-            ?.requestPermissions(alert: true, badge: true, sound: true);
-        return granted ?? false;
-      } else {
-        return true; // other platforms don't need it
-      }
-    } catch (e) {
-      throw PermissionException(
-        'Failed to request notification permissions: $e',
-      );
+    final payload = response.payload;
+    if (payload != null) {
+      // Navigate to appropriate screen based on payload
+      _handleNotificationNavigation(payload);
     }
   }
 
-  Future<void> showNotification({
-    required int id,
-    required String title,
-    required String body,
-    String? payload,
-  }) async {
-    try {
-      const AndroidNotificationDetails androidDetails =
-          AndroidNotificationDetails(
-            'default_channel',
-            'Default Channel',
-            channelDescription: 'Default notification channel',
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-          );
+  void _handleNotificationNavigation(String payload) {
+    // This will be implemented with your router
+    // For now, just print the payload
+    print('Notification tapped: $payload');
+  }
 
-      const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+  // Show immediate notification
+  Future<void> showNotification(NotificationPayload payload) async {
+    await _notifications.show(
+      payload.id.hashCode,
+      payload.title,
+      payload.body,
+      _getNotificationDetails(payload.type),
+      payload: payload.toJson().toString(),
+    );
+  }
+
+  // Schedule notification
+  Future<void> scheduleNotification(NotificationPayload payload) async {
+    await _notifications.zonedSchedule(
+      payload.id.hashCode,
+      payload.title,
+      payload.body,
+      tz.TZDateTime.from(payload.scheduledFor, tz.local),
+      _getNotificationDetails(payload.type),
+      payload: payload.toJson().toString(),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      // uiLocalNotificationDateInterpretation:
+      //     UILocalNotificationDateInterpretation.absoluteTime,
+    );
+  }
+
+  // Schedule recurring notification
+  Future<void> scheduleRecurringNotification(
+    NotificationPayload payload,
+    RepeatInterval interval,
+  ) async {
+    await _notifications.periodicallyShow(
+      payload.id.hashCode,
+      payload.title,
+      payload.body,
+      interval,
+      _getNotificationDetails(payload.type),
+      payload: payload.toJson().toString(),
+      androidScheduleMode: AndroidScheduleMode.alarmClock,
+    );
+  }
+
+  NotificationDetails _getNotificationDetails(NotificationType type) {
+    final channelId = _getChannelId(type);
+    final channelName = _getChannelName(type);
+    final importance = _getImportance(type);
+
+    return NotificationDetails(
+      android: AndroidNotificationDetails(
+        channelId,
+        channelName,
+        importance: importance,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+        color: _getNotificationColor(type),
+        playSound: true,
+        enableVibration: true,
+      ),
+      iOS: const DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
         presentSound: true,
-      );
-
-      const NotificationDetails details = NotificationDetails(
-        android: androidDetails,
-        iOS: iosDetails,
-      );
-
-      await _notifications.show(id, title, body, details, payload: payload);
-    } catch (e) {
-      throw ServerException('Failed to show notification: $e');
-    }
-  }
-
-  Future<void> scheduleNotification({
-    required int id,
-    required String title,
-    required String body,
-    required DateTime scheduledDate,
-    String? payload,
-  }) async {
-    try {
-      const AndroidNotificationDetails androidDetails =
-          AndroidNotificationDetails(
-            'scheduled_channel',
-            'Scheduled Channel',
-            channelDescription: 'Scheduled notification channel',
-            importance: Importance.high,
-            priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
-          );
-
-      const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
-        presentAlert: true,
-        presentBadge: true,
-        presentSound: true,
-      );
-
-      const NotificationDetails details = NotificationDetails(
-        android: androidDetails,
-        iOS: iosDetails,
-      );
-
-      await _notifications.zonedSchedule(
-        id,
-        title,
-        body,
-        tz.TZDateTime.from(scheduledDate, tz.local),
-        details,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        payload: payload,
-      );
-    } catch (e) {
-      throw ServerException('Failed to schedule notification: $e');
-    }
-  }
-
-  Future<void> showRentDueNotification({
-    required String tenantName,
-    required String propertyName,
-    required double amount,
-    required DateTime dueDate,
-  }) async {
-    final id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
-    await showNotification(
-      id: id,
-      title: 'Rent Due Reminder',
-      body:
-          'Rent of ${AppConstants.currencySymbol}$amount is due from $tenantName for $propertyName',
-      payload: 'rent_due',
+      ),
     );
   }
 
-  Future<void> showLeaseExpiryNotification({
-    required String tenantName,
-    required String propertyName,
-    required DateTime expiryDate,
-  }) async {
-    final id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
-    await showNotification(
-      id: id,
-      title: 'Lease Expiry Alert',
-      body:
-          'Lease for $tenantName at $propertyName expires on ${_formatDate(expiryDate)}',
-      payload: 'lease_expiry',
-    );
-  }
-
-  Future<void> showPaymentReceivedNotification({
-    required String tenantName,
-    required double amount,
-    required String paymentType,
-  }) async {
-    final id = DateTime.now().millisecondsSinceEpoch.remainder(100000);
-    await showNotification(
-      id: id,
-      title: 'Payment Received',
-      body:
-          '$paymentType payment of ${AppConstants.currencySymbol}$amount received from $tenantName',
-      payload: 'payment_received',
-    );
-  }
-
-  Future<void> scheduleRentReminders({
-    required String leaseId,
-    required String tenantName,
-    required String propertyName,
-    required double rentAmount,
-    required int dueDayOfMonth,
-  }) async {
-    final now = DateTime.now();
-
-    // Schedule for next 12 months
-    for (int i = 0; i < 12; i++) {
-      final month = now.month + i;
-      final year = now.year + (month > 12 ? 1 : 0);
-      final adjustedMonth = month > 12 ? month - 12 : month;
-
-      final dueDate = DateTime(year, adjustedMonth, dueDayOfMonth);
-
-      // Schedule 3 days before due date
-      final reminderDate = dueDate.subtract(const Duration(days: 3));
-
-      if (reminderDate.isAfter(now)) {
-        await scheduleNotification(
-          id: leaseId.hashCode + i,
-          title: 'Rent Due Soon',
-          body:
-              'Rent of ${AppConstants.currencySymbol}$rentAmount from $tenantName for $propertyName is due in 3 days',
-          scheduledDate: reminderDate,
-          payload: 'rent_reminder_$leaseId',
-        );
-      }
+  String _getChannelId(NotificationType type) {
+    switch (type) {
+      case NotificationType.paymentReminder:
+        return 'payment_reminders';
+      case NotificationType.leaseExpiry:
+        return 'lease_expiry';
+      case NotificationType.maintenanceRequest:
+        return 'maintenance_requests';
+      case NotificationType.propertyUpdate:
+        return 'property_updates';
+      case NotificationType.systemAlert:
+        return 'system_alerts';
     }
   }
 
-  Future<void> cancelNotification(int id) async {
-    try {
-      await _notifications.cancel(id);
-    } catch (e) {
-      throw ServerException('Failed to cancel notification: $e');
+  String _getChannelName(NotificationType type) {
+    switch (type) {
+      case NotificationType.paymentReminder:
+        return 'Payment Reminders';
+      case NotificationType.leaseExpiry:
+        return 'Lease Expiry Alerts';
+      case NotificationType.maintenanceRequest:
+        return 'Maintenance Requests';
+      case NotificationType.propertyUpdate:
+        return 'Property Updates';
+      case NotificationType.systemAlert:
+        return 'System Alerts';
     }
   }
 
+  Importance _getImportance(NotificationType type) {
+    switch (type) {
+      case NotificationType.paymentReminder:
+      case NotificationType.leaseExpiry:
+        return Importance.high;
+      case NotificationType.maintenanceRequest:
+        return Importance.defaultImportance;
+      case NotificationType.propertyUpdate:
+        return Importance.low;
+      case NotificationType.systemAlert:
+        return Importance.max;
+    }
+  }
+
+  Color? _getNotificationColor(NotificationType type) {
+    switch (type) {
+      case NotificationType.paymentReminder:
+        return const Color(0xFF2196F3); // Blue
+      case NotificationType.leaseExpiry:
+        return const Color(0xFFFF9800); // Orange
+      case NotificationType.maintenanceRequest:
+        return const Color(0xFF4CAF50); // Green
+      case NotificationType.propertyUpdate:
+        return const Color(0xFF9C27B0); // Purple
+      case NotificationType.systemAlert:
+        return const Color(0xFFF44336); // Red
+    }
+  }
+
+  // Cancel notification
+  Future<void> cancelNotification(String notificationId) async {
+    await _notifications.cancel(notificationId.hashCode);
+  }
+
+  // Cancel all notifications
   Future<void> cancelAllNotifications() async {
-    try {
-      await _notifications.cancelAll();
-    } catch (e) {
-      throw ServerException('Failed to cancel all notifications: $e');
-    }
+    await _notifications.cancelAll();
   }
 
+  // Get pending notifications
   Future<List<PendingNotificationRequest>> getPendingNotifications() async {
-    try {
-      return await _notifications.pendingNotificationRequests();
-    } catch (e) {
-      throw ServerException('Failed to get pending notifications: $e');
-    }
+    return await _notifications.pendingNotificationRequests();
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+  // Check if notification is scheduled
+  Future<bool> isNotificationScheduled(String notificationId) async {
+    final pending = await getPendingNotifications();
+    return pending.any((n) => n.id == notificationId.hashCode);
   }
 }
